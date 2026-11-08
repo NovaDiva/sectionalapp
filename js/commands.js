@@ -25,6 +25,62 @@ const FILLER = new Set([
   'bar', 'bars', 'letter', 'until', 'till', 'through', 'thru', 'version', 'voice', 'top', 'beginning',
 ]);
 
+// ---- Spoken commands -------------------------------------------------------
+// Speech recognition writes what it hears: "Alto's bar thirty two", "letter bee",
+// "base from the top". Turn that into the same form as a typed command.
+
+const NUM_UNITS = { zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9,
+  ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17,
+  eighteen: 18, nineteen: 19 };
+const NUM_TENS = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
+const SPOKEN_LETTERS = {
+  ay: 'A', eh: 'A', bee: 'B', be: 'B', see: 'C', sea: 'C', cee: 'C', dee: 'D', ee: 'E', eff: 'F', ef: 'F',
+  gee: 'G', jee: 'G', aitch: 'H', haitch: 'H', eye: 'I', jay: 'J', kay: 'K', el: 'L', ell: 'L', em: 'M',
+  en: 'N', oh: 'O', pee: 'P', cue: 'Q', queue: 'Q', are: 'R', ar: 'R', ess: 'S', tee: 'T', tea: 'T',
+  you: 'U', vee: 'V', ex: 'X', why: 'Y', zed: 'Z', zee: 'Z',
+};
+const LETTER_CUES = new Set(['letter', 'rehearsal', 'figure', 'from', 'to', 'until', 'till', 'at', 'section']);
+const SOUNDS_LIKE = { base: 'bass', bases: 'basses', tenner: 'tenor', tenners: 'tenors', altar: 'alto', altos: 'altos',
+  soprano: 'soprano', sopranos: 'sopranos', bars: 'bars', bah: 'bar', baa: 'bar', ba: 'bar' };
+
+export function normalizeSpoken(input) {
+  let text = String(input || '').trim().replace(/[.!?]+$/, '');
+  // "Alto's", "altos'" -> "altos"
+  text = text.replace(/(\w)['’]s\b/gi, '$1s').replace(/(\w)s['’]/gi, '$1s');
+  // Keep "note: ..." and "fix: ..." text as spoken, only tidy the command word.
+  if (/^(note|notes|fix|todo|to do|next time|work on)\b/i.test(text)) return text;
+
+  const out = [];
+  const toks = text.split(/\s+/);
+  for (let i = 0; i < toks.length; i++) {
+    const raw = toks[i];
+    const w = raw.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    const prev = (out[out.length - 1] || '').toLowerCase();
+    // Number words: "thirty two" -> 32, "one hundred and four" -> 104, "twenty-one" -> 21
+    if (w in NUM_UNITS || w in NUM_TENS || /^(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)-\w+$/.test(w)) {
+      let n = 0, j = i, any = false;
+      while (j < toks.length) {
+        const x = toks[j].toLowerCase().replace(/[^a-z-]/g, '');
+        const parts = x.split('-');
+        if (parts.length === 2 && parts[0] in NUM_TENS && parts[1] in NUM_UNITS) { n += NUM_TENS[parts[0]] + NUM_UNITS[parts[1]]; j++; any = true; continue; }
+        if (x in NUM_TENS && n % 100 === 0) { n += NUM_TENS[x]; j++; any = true; continue; }
+        if (x in NUM_UNITS && n % 10 === 0 && !(n % 100 !== 0 && NUM_UNITS[x] >= 10)) { n += NUM_UNITS[x]; j++; any = true; continue; }
+        if (x === 'hundred' && any) { n = (n || 1) * 100; j++; continue; }
+        if (x === 'and' && any && n % 100 === 0 && n > 0 && j + 1 < toks.length) { j++; continue; }
+        break;
+      }
+      if (any) { out.push(String(n)); i = j - 1; continue; }
+    }
+    // "letter bee" -> "letter B"
+    if (LETTER_CUES.has(prev) && SPOKEN_LETTERS[w]) { out.push(SPOKEN_LETTERS[w]); continue; }
+    // A single letter said on its own after a cue: "from b" -> "from B"
+    if (LETTER_CUES.has(prev) && /^[a-z]$/.test(w) && prev !== 'to') { out.push(w.toUpperCase()); continue; }
+    if (SOUNDS_LIKE[w]) { out.push(SOUNDS_LIKE[w]); continue; }
+    out.push(raw);
+  }
+  return out.join(' ').trim();
+}
+
 export function canonicalVoice(word) {
   return ALIAS[word] || null;
 }
@@ -49,7 +105,7 @@ function trackKeys(name) {
  * @returns {object} action. Always has `type`. Play actions carry songId, trackId, start, end, reply.
  */
 export function parseCommand(input, ctx) {
-  const text = String(input || '').trim();
+  const text = normalizeSpoken(input);
   if (!text) return { type: 'none' };
   const lower = text.toLowerCase();
 

@@ -130,3 +130,17 @@ test('command: lyric search, controls, notes', () => {
   assert.deepEqual(parseCommand('note: altos flat at C', ctx), { type: 'note', text: 'altos flat at C' });
   assert.deepEqual(parseCommand('fix tuning in bar 40', ctx), { type: 'todo', text: 'tuning in bar 40' });
 });
+
+test('spoken commands are understood', () => {
+  const a = parseCommand("Alto's bar fifteen.", ctx);
+  assert.equal(a.trackId, 't-alto');
+  assert.equal(a.start, 35);
+  assert.equal(parseCommand('full mix letter bee', ctx).start, 61);
+  const r = parseCommand('alto bars fifteen to twenty eight', ctx);
+  assert.equal(r.start, 35);
+  assert.equal(r.end, 63);
+  assert.equal(parseCommand('soprano two letter see', ctx).trackId, 't-s2');
+  assert.equal(parseCommand('Viva base from the top', ctx).trackId, 'v-bass');
+  assert.equal(parseCommand('Stop.', ctx).type, 'pause');
+  assert.deepEqual(parseCommand('Note: altos flat at letter C.', ctx), { type: 'note', text: 'altos flat at letter C' });
+});

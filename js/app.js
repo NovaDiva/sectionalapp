@@ -1,6 +1,7 @@
 import * as db from './db.js';
 import * as player from './player.js';
 import { parseCommand, suggestionsFor, canonicalVoice } from './commands.js';
+import { voiceSupported, listen, stopListening, isListening } from './voice.js';
 import {
   formatTime, sortMarks, markTitle, lettersIn, parseTimestampTable, parseBarLetter,
 } from './timestamps.js';
@@ -468,7 +469,7 @@ async function screenRehearsalNew() {
 // ---------------------------------------------------------------- Rehearsal
 
 const HELP = [
-  'Type what you want to hear, then tap Go. For example:',
+  'Tap 🎤 and say what you want to hear, or type it and tap Go. For example:',
   '• alto bar 32',
   '• full mix letter B',
   '• soprano 1 bars 10-24 (stops after bar 24)',
@@ -553,8 +554,37 @@ async function screenRehearsal(id, tab = 'play') {
       runCommand(v);
       if (compact) { toast(r.log[r.log.length - 1]?.text || ''); input.blur(); }
     };
+    const mic = h('button', { class: 'btn icon mic', type: 'button', 'aria-label': 'Speak a command', onclick: async () => {
+      if (isListening()) { stopListening(); return; }
+      if (!voiceSupported) {
+        // No built-in recognition here: use the keyboard's dictation key instead.
+        input.focus();
+        toast('Tap the 🎤 on the keyboard and speak, then tap Go');
+        return;
+      }
+      player.unlock();
+      const wasPlaying = player.state.playing;
+      if (wasPlaying) player.pause(); // so the mic hears you, not the track
+      mic.classList.add('listening');
+      input.value = '';
+      input.placeholder = 'Listening… say e.g. "alto bar 32"';
+      try {
+        const heard = await listen({ onInterim: (t) => { input.value = t; } });
+        if (heard) { input.value = heard; go(); }
+        else if (wasPlaying) player.resume();
+      } catch (e) {
+        const msg = /not-allowed|service-not-allowed/.test(e.message)
+          ? 'Microphone not allowed. Use the 🎤 on the keyboard instead, or allow the microphone in Settings.'
+          : 'Sorry, I didn\'t catch that. Try again, or type it.';
+        toast(msg);
+      } finally {
+        mic.classList.remove('listening');
+        input.placeholder = placeholder;
+      }
+    } }, '🎤');
+    const placeholder = input.placeholder;
     const form = h('form', { class: 'row cmd-row', onsubmit: (e) => { e.preventDefault(); go(); } },
-      input, h('button', { class: 'btn primary', type: 'submit' }, 'Go'),
+      mic, input, h('button', { class: 'btn primary', type: 'submit' }, 'Go'),
       h('button', { class: 'btn icon', type: 'button', 'aria-label': 'Stop', onclick: () => runCommand('stop') }, '⏹'));
     return form;
   }

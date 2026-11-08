@@ -29,7 +29,9 @@ Tips:
 ## 4. Run a rehearsal
 
 1. Tap **🎤 Rehearsal** → **Start a new rehearsal**, tap your section (e.g. Alto) and tick the songs.
-2. In **▶ Play**, type what you want and tap **Go**:
+2. In **▶ Play**, tap the **🎤** button and say what you want (or type it and tap **Go**).
+   The first time, the iPad asks to use the microphone and speech recognition: tap **Allow**.
+   The track pauses while you speak, so the iPad hears you and not the music. For example:
    - `alto bar 32`
    - `full mix letter B`
    - `bars 10-24` (stops after bar 24)
@@ -37,6 +39,7 @@ Tips:
    - `stop` · `again` · `back 10`
    - To switch songs, tap the song name at the top, or start with part of the title: `river tenor letter A`
    - Or just tap the ready-made buttons under the chat.
+   - If the 🎤 button says it can't listen, tap in the box and use the **🎤 on the iPad keyboard** (dictation) instead, then tap **Go**.
 3. Tap **📖 Score** to show the score full screen. You can type commands at the top while you look at it.
 4. **📝 Notes**: type anything worth remembering. You can also type `note: altos flat at C` in the Play box.
 5. **✓ Covered**: tap the letters you worked on and add any bars.

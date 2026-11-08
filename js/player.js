@@ -80,6 +80,24 @@ export function playFrom(item, start = 0, end = null, songTitle = '') {
   return true;
 }
 
+// iPad Safari only lets audio start from a tap. Call this inside a tap handler
+// (e.g. the microphone button) so a voice command can start playback later.
+const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+let unlocked = false;
+export function unlock() {
+  if (unlocked) return;
+  unlocked = true;
+  if (audio.src) {
+    // Something is loaded: a quick play/pause on the real track does it.
+    const wasPaused = audio.paused;
+    audio.play().then(() => { if (wasPaused) audio.pause(); }).catch(() => { unlocked = false; });
+    return;
+  }
+  audio.src = SILENT_WAV;
+  audio.play().then(() => audio.pause()).catch(() => { unlocked = false; });
+}
+audio.addEventListener('playing', () => { unlocked = true; });
+
 export function again() {
   if (!state.track) return false;
   return playFrom(state.track, state.lastStart, state.lastEnd, state.songTitle);
