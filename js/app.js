@@ -876,13 +876,36 @@ async function screenRehearsal(id, tab = 'play') {
 
   // ---- song bar
   const songBar = h('div', { class: 'song-bar' });
+  // Add (or take out) songs part-way through a rehearsal.
+  async function changeSongs() {
+    const all = (await db.getAll('songs')).sort((a, b) => a.title.localeCompare(b.title));
+    const picked = new Set(r.songIds);
+    const list = h('div', { class: 'list' }, all.map((x) => {
+      const cb = h('input', { type: 'checkbox', checked: picked.has(x.id), onchange: () => (cb.checked ? picked.add(x.id) : picked.delete(x.id)) });
+      return h('label', { class: 'list-item check' }, cb, h('span', { class: 'item-title' }, x.title));
+    }));
+    const ok = await modal('Songs in this rehearsal', h('div', {},
+      h('p', { class: 'muted small' }, 'Tick the songs to add. Untick a song to take it out (its notes are kept).'), list),
+      [{ label: 'Cancel', value: () => false }, { label: 'Done', cls: 'btn primary', value: () => true }]);
+    if (!ok) return;
+    if (!picked.size) { toast('Keep at least one song'); return; }
+    const added = all.filter((x) => picked.has(x.id) && !r.songIds.includes(x.id)).map((x) => x.id);
+    r.songIds = [...r.songIds.filter((sid) => picked.has(sid)), ...added];
+    if (added.length) r.currentSongId = added[0]; // jump to the new song
+    else if (!r.songIds.includes(r.currentSongId)) r.currentSongId = r.songIds[0];
+    await save();
+    toast(added.length ? `${added.length === 1 ? 'Song' : 'Songs'} added` : 'Songs updated');
+    cleanup.forEach((fn) => fn()); cleanup = [];
+    screenRehearsal(r.id, tab);
+  }
+
   function renderSongBar() {
     const s = curSong();
     fill(songBar, 
       h('div', { class: 'row wrap' }, songs.map((x) => h('button', {
         class: `chip ${x.id === r.currentSongId ? 'on' : ''}`,
         onclick: () => { r.currentSongId = x.id; save(); renderSongBar(); refreshControls(); },
-      }, x.title))),
+      }, x.title)), h('button', { class: 'chip add-song', onclick: changeSongs }, '＋ Add song')),
       s ? h('div', { class: 'row wrap' },
         s.scores.length
           ? s.scores.map((sc) => h('button', { class: 'btn', onclick: () => openScore(sc, { commandBox: commandBox(true) }) }, `📖 ${sc.name}`))

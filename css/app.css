@@ -292,3 +292,5 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
 .field-label { font-size: 15px; font-weight: 700; color: var(--muted); }
 .field input { width: 100% !important; text-align: left; }
 .btn.wide { display: flex; }
+
+.chip.add-song { border-style: dashed; border-color: var(--brand); color: var(--brand); font-weight: 700; }
