@@ -286,3 +286,9 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
 .link-btn { background: none; border: 0; color: var(--brand); font: inherit; font-weight: 700; text-decoration: underline; min-height: 44px; padding: 0 6px; cursor: pointer; }
 .chip.static { display: inline-flex; align-items: center; gap: 4px; cursor: default; padding-right: 6px; }
 .chip-x { border: 0; background: none; color: var(--danger); font-size: 18px; min-width: 40px; min-height: 40px; cursor: pointer; }
+
+/* form fields on their own rows */
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field-label { font-size: 15px; font-weight: 700; color: var(--muted); }
+.field input { width: 100% !important; text-align: left; }
+.btn.wide { display: flex; }

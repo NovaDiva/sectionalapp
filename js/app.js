@@ -548,8 +548,22 @@ function todoText(t, songs) {
 async function screenRehearsalNew() {
   const songs = (await db.getAll('songs')).sort((a, b) => a.title.localeCompare(b.title));
   const mine = myParts();
-  const titleIn = h('input', { type: 'text', value: mine?.length ? `${mine.join(' & ')} sectional` : 'Sectional', class: 'grow', 'aria-label': 'Rehearsal name' });
+  const options = mine?.length ? mine : choirParts();
+  // Leaders with one part have it chosen already; with several they tap one (or more).
+  const parts = new Set(options.length === 1 ? options : []);
+  let titleEdited = false;
+  const autoTitle = () => (parts.size ? `${options.filter((p) => parts.has(p)).join(' & ')} sectional` : 'Sectional');
+  const titleIn = h('input', { type: 'text', value: autoTitle(), 'aria-label': 'Rehearsal name', oninput: () => { titleEdited = true; } });
   const dateIn = h('input', { type: 'date', value: todayISO(), 'aria-label': 'Date' });
+  const partBtns = options.map((p) => {
+    const b = h('button', { class: `track-btn ${parts.has(p) ? 'on' : ''}`, 'aria-pressed': parts.has(p) ? 'true' : 'false', onclick: () => {
+      parts.has(p) ? parts.delete(p) : parts.add(p);
+      b.classList.toggle('on', parts.has(p));
+      b.setAttribute('aria-pressed', parts.has(p) ? 'true' : 'false');
+      if (!titleEdited) titleIn.value = autoTitle();
+    } }, p);
+    return b;
+  });
   const chosen = new Set();
   const songList = h('div', { class: 'list' }, songs.map((s) => {
     const cb = h('input', { type: 'checkbox', onchange: () => (cb.checked ? chosen.add(s.id) : chosen.delete(s.id)) });
@@ -558,15 +572,18 @@ async function screenRehearsalNew() {
 
   setScreen('New rehearsal', [
     h('div', { class: 'card' },
-      h('h2', {}, 'Which section?'),
-      h('div', { class: 'row wrap' }, (mine?.length ? mine : choirParts()).map((v) =>
-        h('button', { class: 'chip', onclick: () => { titleIn.value = `${v} sectional`; } }, v))),
-      h('div', { class: 'row' }, titleIn, dateIn)),
+      h('h2', {}, 'Which part?'),
+      h('p', { class: 'muted small' }, 'Tap the part you are rehearsing (tap more than one for a combined sectional). Only those tracks will show.'),
+      h('div', { class: 'track-row' }, partBtns),
+      h('label', { class: 'field' }, h('span', { class: 'field-label' }, 'Name'), titleIn),
+      h('label', { class: 'field' }, h('span', { class: 'field-label' }, 'Date'), dateIn)),
     h('div', { class: 'card' }, h('h2', {}, 'Which songs?'), songList),
     h('button', { class: 'btn primary big wide', onclick: async () => {
+      if (!parts.size && options.length > 1) { toast('Tap the part you are rehearsing'); return; }
       if (!chosen.size) { toast('Tick at least one song'); return; }
       const r = {
-        id: db.uid(), title: titleIn.value.trim() || 'Sectional', date: dateIn.value || todayISO(),
+        id: db.uid(), title: titleIn.value.trim() || autoTitle(), date: dateIn.value || todayISO(),
+        parts: options.filter((p) => parts.has(p)),
         songIds: songs.filter((s) => chosen.has(s.id)).map((s) => s.id),
         notes: [], covered: {}, log: [], status: 'open', createdAt: Date.now(),
       };
@@ -595,7 +612,8 @@ async function screenRehearsal(id, tab = 'play') {
   const r = await db.get('rehearsals', id);
   if (!r) { location.hash = '#/'; return; }
   const songs = await db.songsWithTracks(r.songIds);
-  for (const s of songs) { s.allTracks = s.tracks; if (!r.showAllParts) s.tracks = visibleTracks(s.tracks); }
+  const rParts = r.parts?.length ? r.parts : myParts();
+  for (const s of songs) { s.allTracks = s.tracks; if (!r.showAllParts) s.tracks = visibleTracks(s.tracks, rParts); }
   r.currentSongId = r.currentSongId && songs.some((s) => s.id === r.currentSongId) ? r.currentSongId : songs[0]?.id;
   const save = () => db.put('rehearsals', r);
   const curSong = () => songs.find((s) => s.id === r.currentSongId);
@@ -777,7 +795,7 @@ async function screenRehearsal(id, tab = 'play') {
     return h('div', { class: `play-panel ${compact ? 'compact' : ''}` },
       compact ? null : h('div', { class: 'row space' },
         h('div', { class: 'panel-label' }, 'Track'),
-        (curSong()?.allTracks.length || 0) > (visibleTracks(curSong()?.allTracks || []).length) || r.showAllParts
+        (curSong()?.allTracks.length || 0) > (visibleTracks(curSong()?.allTracks || [], rParts).length) || r.showAllParts
           ? h('button', { class: 'link-btn', type: 'button', onclick: async () => {
               r.showAllParts = !r.showAllParts; await save();
               cleanup.forEach((fn) => fn()); cleanup = []; screenRehearsal(r.id, tab);
@@ -898,7 +916,7 @@ async function screenRehearsal(id, tab = 'play') {
   renderSongBar();
   setScreen(r.title, [
     h('div', { class: 'row space' },
-      h('div', { class: 'muted' }, fmtDate(r.date)),
+      h('div', { class: 'muted' }, `${r.parts?.length ? r.parts.join(' & ') + ' · ' : ''}${fmtDate(r.date)}`),
       h('a', { class: 'btn primary', href: `#/summary/${r.id}` }, r.status === 'done' ? 'Summary' : 'Finish & share')),
     songBar,
     tabBar,

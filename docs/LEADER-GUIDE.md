@@ -36,7 +36,7 @@ Tips:
 
 ## 5. Run a rehearsal
 
-1. Tap **🎤 Rehearsal** → **Start a new rehearsal**, tap your section (e.g. Alto) and tick the songs.
+1. Tap **🎤 Rehearsal** → **Start a new rehearsal**. Tap the **part** you're rehearsing (it turns purple with a ✓; tap two for a combined sectional), check the name and date, tick the songs, then tap **Start rehearsal**. Only that part's tracks (plus the full mix) will show.
 2. In **▶ Play**:
    - **Track:** tap the track you want (the buttons use the track names, e.g. Full mix, Alto 1). It stays chosen until you tap another. Only your parts are shown. Tap **Show all parts** to see the rest.
    - **Start from:** tap **▶ From the top**, a letter (**A**, **B**, **C**…), or type a bar number and tap **▶ Bar**.
