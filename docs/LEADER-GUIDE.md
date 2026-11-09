@@ -29,21 +29,19 @@ Tips:
 ## 4. Run a rehearsal
 
 1. Tap **🎤 Rehearsal** → **Start a new rehearsal**, tap your section (e.g. Alto) and tick the songs.
-2. In **▶ Play**, tap the **🎤** button and say what you want (or type it and tap **Go**).
-   The first time, the iPad asks to use the microphone and speech recognition: tap **Allow**.
-   The track pauses while you speak, so the iPad hears you and not the music. For example:
-   - `alto bar 32`
-   - `full mix letter B`
-   - `bars 10-24` (stops after bar 24)
-   - `B to C`
-   - `stop` · `again` · `back 10`
-   - To switch songs, tap the song name at the top, or start with part of the title: `river tenor letter A`
-   - Or just tap the ready-made buttons under the chat.
-   - If the 🎤 button says it can't listen, tap in the box and use the **🎤 on the iPad keyboard** (dictation) instead, then tap **Go**.
-3. Tap **📖 Score** to show the score full screen. You can type commands at the top while you look at it.
-4. **📝 Notes**: type anything worth remembering. You can also type `note: altos flat at C` in the Play box.
-5. **✓ Covered**: tap the letters you worked on and add any bars.
-6. **🔧 Fix next time**: add things to work on (or type `fix: tuning bar 40`). Tick them when they're sorted. Anything left unticked shows up again next time.
+2. In **▶ Play**:
+   - **Track:** tap the track you want (the buttons use the track names, e.g. Full mix, Alto). It stays chosen until you tap another.
+   - **Start from:** tap **▶ From the top**, a letter (**A**, **B**, **C**…), or type a bar number and tap **▶ Bar**.
+     Letters and bars need that track's timestamps. Without them, only "From the top" works.
+   - Use the big **⏹ Stop**, **↺ Again** and **⏪ Back 5s** buttons.
+3. **Voice (optional):** tap **🎤 Speak** and say e.g. "letter B", "bar 32" or "alto bar 32". Saying a track name switches to that track.
+   You can also type the same words in the box and tap **Go**.
+   Using a Bluetooth speaker? The iPad may move the sound off the speaker when the microphone is used. If so, turn the voice button off in **❔ Help** and use the buttons.
+4. Tap **📖 Score** to show the score full screen. **🎵 Player** shows or hides the track and letter buttons.
+   - **✏️ Mark up** lets you draw on the score: **✏️ Pen**, **🖍 Highlight**, **🔤 Text** (tap where the note goes), **🧽 Eraser**, **↶ Undo**. Tap **✋ Scroll** to move the page again. Your marks are saved on this iPad.
+5. **📝 Notes**: type anything worth remembering.
+6. **✓ Covered**: tap the letters you worked on and add any bars.
+7. **🔧 Fix next time**: add things to work on. Tick them when they're sorted. Anything left unticked shows up again next time.
 
 ## 5. Finish and share
 

@@ -12,8 +12,11 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
 - Timestamps are made in the app by tap-along (MARK button), with no AI. Each track has its own
   timestamps (part tracks don't share timing). Pasting a table from her "2027 Time Stamps" doc is
   also supported (the format comes from her choir-track-timestamps skill).
-- Rehearsal commands: chat box with typed commands plus a 🎤 voice button (Web Speech API, with
-  keyboard dictation as the fallback). Ready-made buttons under the chat.
+- Rehearsal Play tab: big track buttons (track names, choice stays per song), Start-from buttons
+  (top / letters / bar box), big Speak/Stop/Again/Back 5s, a type box, then the chat log.
+  The 🎤 voice button can be switched off in Help (Bluetooth speakers drop when the mic is used).
+- Score viewer: ✏️ Mark up (pen, highlighter, typed notes, eraser, undo), saved in item.annotations
+  as fractions of the page size; 🎵 Player toggles the compact track/letter panel.
 - Rehearsal record: songs/letters/bars covered, free-text notes, a "Fix next time" list that carries over.
 - Summary is shared with the iPad share sheet (email/WhatsApp).
 
@@ -25,6 +28,7 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
 - iPad audio must start from a tap: keep `player.prepare()` before commands and `player.unlock()` on the mic tap.
 
 ## Status
-v4 (9 Nov 2026): version 1 + voice commands + Bluetooth speaker sound fix + update banner.
-Carol tested it in a real rehearsal and has a list of changes coming next.
+v5 (9 Nov 2026): after Carol's first rehearsal: big Play controls + track buttons, score mark-up,
+voice on/off switch. Earlier: voice commands, Bluetooth sound-mode fix, update banner.
+Open question: does the Bluetooth speaker stay connected with the mic in v5 (audioSession fix)?
 Reminder for Carol: each Safari tab or Home Screen icon has its own separate storage.

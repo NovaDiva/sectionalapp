@@ -1,9 +1,9 @@
 import * as db from './db.js';
 import * as player from './player.js';
-import { parseCommand, suggestionsFor, canonicalVoice } from './commands.js';
+import { parseCommand, canonicalVoice } from './commands.js';
 import { voiceSupported, listen, stopListening, isListening } from './voice.js';
 import {
-  formatTime, sortMarks, markTitle, lettersIn, parseTimestampTable, parseBarLetter,
+  formatTime, sortMarks, markTitle, lettersIn, parseTimestampTable, parseBarLetter, findLetter, timeForBar,
 } from './timestamps.js';
 
 // ---------------------------------------------------------------- helpers
@@ -115,17 +115,68 @@ function setupMini() {
 // ---------------------------------------------------------------- score viewer
 
 async function openScore(item, { commandBox } = {}) {
+  item = (await db.get('items', item.id)) || item; // latest marks
+  const { createAnnotator, PEN_COLOURS, HL_COLOURS } = await import('./annotate.js');
+  const ann = createAnnotator(item);
   const body = h('div', { class: 'pdf-body' }, h('p', { class: 'muted center' }, 'Opening score…'));
   let ctl = null;
-  const close = () => { ctl?.destroy(); ov.remove(); document.body.classList.remove('viewing'); };
+
+  // ---- mark-up toolbar
+  const tools = [['move', '✋', 'Scroll'], ['pen', '✏️', 'Pen'], ['hl', '🖍', 'Highlight'], ['text', '🔤', 'Text'], ['erase', '🧽', 'Eraser']];
+  const swatches = h('div', { class: 'swatches' });
+  const toolBtns = tools.map(([k, icon, label]) => h('button', {
+    class: `tool-btn ${k === 'move' ? 'on' : ''}`, 'data-tool': k, onclick: () => setTool(k),
+  }, h('span', { class: 'tool-icon' }, icon), h('span', {}, label)));
+  const hint = h('div', { class: 'tool-hint' });
+  function setTool(k) {
+    ann.setTool(k);
+    toolBtns.forEach((b) => b.classList.toggle('on', b.dataset.tool === k));
+    const colours = k === 'pen' || k === 'text' ? PEN_COLOURS : k === 'hl' ? HL_COLOURS : [];
+    fill(swatches, colours.map((c) => h('button', {
+      class: `swatch ${ann.colourFor(k) === c ? 'on' : ''}`, style: `background:${c}`, 'aria-label': 'Colour',
+      onclick: () => { ann.setColour(k, c); setTool(k); },
+    })));
+    hint.textContent = {
+      move: 'Scroll mode: swipe to move through the score.',
+      pen: 'Draw with your finger or Apple Pencil. Tap ✋ Scroll to move the page.',
+      hl: 'Drag over the music to highlight it.',
+      text: 'Tap where the note should go and type it. Tap a note to change or delete it.',
+      erase: 'Rub over a mark to remove it. Tap a typed note to delete it.',
+    }[k];
+  }
+  const toolbar = h('div', { class: 'markup-bar', hidden: true },
+    h('div', { class: 'markup-tools' }, toolBtns,
+      h('button', { class: 'tool-btn', onclick: () => { if (!ann.undo()) toast('Nothing to undo'); } }, h('span', { class: 'tool-icon' }, '↶'), h('span', {}, 'Undo')),
+      swatches,
+      h('button', { class: 'tool-btn danger', onclick: () => {
+        if (!ann.count()) { toast('No marks on this score'); return; }
+        if (confirm('Remove ALL your marks from this score?')) ann.clearAll();
+      } }, h('span', { class: 'tool-icon' }, '🗑'), h('span', {}, 'Clear all'))),
+    hint);
+  setTool('move');
+
+  const markBtn = h('button', { class: 'btn', onclick: () => {
+    toolbar.hidden = !toolbar.hidden;
+    markBtn.classList.toggle('primary', !toolbar.hidden);
+    if (!toolbar.hidden) { if (commandBox) commandBox.hidden = true; playBtn && playBtn.classList.remove('primary'); setTool('pen'); }
+    else setTool('move');
+  } }, '✏️ Mark up');
+  const playBtn = commandBox ? h('button', { class: 'btn primary', onclick: () => {
+    commandBox.hidden = !commandBox.hidden;
+    playBtn.classList.toggle('primary', !commandBox.hidden);
+  } }, '🎵 Player') : null;
+
+  const close = async () => { await ann.flush(); ctl?.destroy(); ov.remove(); document.body.classList.remove('viewing'); };
   const ov = h('div', { class: 'overlay' },
     h('div', { class: 'overlay-bar' },
       h('button', { class: 'btn big-close', onclick: close }, '✕ Close'),
       h('div', { class: 'overlay-title' }, item.name),
+      markBtn, playBtn,
       h('button', { class: 'btn icon', 'aria-label': 'Smaller', onclick: () => ctl?.zoomOut() }, '－'),
       h('button', { class: 'btn icon', 'aria-label': 'Fit width', onclick: () => ctl?.fit() }, '⤢'),
       h('button', { class: 'btn icon', 'aria-label': 'Bigger', onclick: () => ctl?.zoomIn() }, '＋'),
     ),
+    toolbar,
     commandBox || null,
     body,
   );
@@ -133,7 +184,7 @@ async function openScore(item, { commandBox } = {}) {
   document.body.classList.add('viewing');
   try {
     const { renderScore } = await import('./pdfviewer.js');
-    ctl = await renderScore(body, item);
+    ctl = await renderScore(body, item, { onPage: (n, holder) => ann.attach(n, holder) });
   } catch (e) {
     fill(body, h('p', { class: 'error center' }, `Sorry, this score could not be opened. ${e.message || ''}`));
   }
@@ -201,7 +252,11 @@ async function screenSong(id) {
 
   const rename = async (item) => {
     const name = prompt('New name:', item.name);
-    if (name && name.trim()) { item.name = name.trim(); await db.put('items', item); refresh(); }
+    if (!name || !name.trim()) return;
+    const fresh = (await db.get('items', item.id)) || item;
+    fresh.name = name.trim();
+    await db.put('items', fresh);
+    refresh();
   };
   const remove = async (item) => {
     if (!confirm(`Delete "${item.name}" from this iPad?`)) return;
@@ -469,15 +524,16 @@ async function screenRehearsalNew() {
 // ---------------------------------------------------------------- Rehearsal
 
 const HELP = [
-  'Tap 🎤 and say what you want to hear, or type it and tap Go. For example:',
-  '• alto bar 32',
-  '• full mix letter B',
-  '• soprano 1 bars 10-24 (stops after bar 24)',
-  '• B to C',
+  'Choose a track with the big buttons, then tap From the top, a letter or a bar.',
+  'Or tap 🎤 Speak (or type) and say, for example:',
+  '• letter B · bar 32 (uses the chosen track)',
+  '• alto bar 32 (switches to the Alto track)',
+  '• bars 10-24 (stops after bar 24) · B to C',
   '• river tenor from the top (another song: start with part of its title)',
   '• stop · again · back 10 · forward 5',
   '• note: altos flat at C',
   '• fix: tuning in bar 40 (adds to "Fix next time")',
+  'Letters and bars need the track\'s timestamps (🎼 Songs → ⏱ Timestamps).',
 ].join('\n');
 
 async function screenRehearsal(id, tab = 'play') {
@@ -509,9 +565,8 @@ async function screenRehearsal(id, tab = 'play') {
   function runCommand(text) {
     text = text.trim();
     if (!text) return;
-    const cur = player.state.track;
-    // The highlighted song wins; keep the playing track only if it belongs to that song.
-    const ctx = { songs, current: { songId: r.currentSongId, trackId: cur?.songId === r.currentSongId ? cur.id : null } };
+    // The highlighted song and its chosen track are used unless the command names others.
+    const ctx = { songs, current: { songId: r.currentSongId, trackId: chosenTrack(curSong())?.id } };
     const a = parseCommand(text, ctx);
     addLog('you', text);
     switch (a.type) {
@@ -524,7 +579,10 @@ async function screenRehearsal(id, tab = 'play') {
           break;
         }
         player.playFrom(track, a.start, a.end, song.title);
-        if (r.currentSongId !== song.id) { r.currentSongId = song.id; renderSongBar(); }
+        const changed = r.currentSongId !== song.id || chosenTrack(song)?.id !== track.id;
+        r.currentSongId = song.id;
+        r.trackFor[song.id] = track.id;
+        if (changed) { renderSongBar(); refreshControls(); }
         addLog('app', a.reply);
         break;
       }
@@ -543,21 +601,80 @@ async function screenRehearsal(id, tab = 'play') {
     save();
   }
 
-  function commandBox(compact = false) {
-    const input = h('input', {
-      type: 'text', class: 'grow cmd', placeholder: compact ? 'e.g. alto letter B' : 'Type e.g. "alto bar 32" or "stop"',
-      autocapitalize: 'none', autocomplete: 'off', enterkeyhint: 'go', 'aria-label': 'Command',
-    });
-    const go = () => {
-      const v = input.value;
-      input.value = '';
-      runCommand(v);
-      if (compact) { toast(r.log[r.log.length - 1]?.text || ''); input.blur(); }
+  // ---- chosen track per song (big track buttons)
+  r.trackFor = r.trackFor || {};
+  function chosenTrack(song) {
+    if (!song?.tracks.length) return null;
+    return song.tracks.find((t) => t.id === r.trackFor[song.id])
+      || song.tracks.find((t) => /full|all|mix|tutti/i.test(t.name)) || song.tracks[0];
+  }
+  const refreshers = new Set();
+  function refreshControls() { refreshers.forEach((fn) => fn()); }
+  onLeave(() => refreshers.clear());
+
+  // Play the chosen track directly (used by the buttons, no typing needed).
+  function playChosen(start, end, desc) {
+    const song = curSong();
+    const track = chosenTrack(song);
+    if (!track) { addLog('app', 'This song has no tracks yet. Add them on the Songs page.'); return; }
+    if (!player.isPrepared(track)) { addLog('app', 'Still loading the tracks. Try again in a moment.'); return; }
+    player.playFrom(track, start, end, song.title);
+    addLog('app', `Playing ${song.title} · ${track.name} ${desc} (${formatTime(start)}).`);
+    save();
+  }
+
+  function trackButtons(cls = '') {
+    const el = h('div', { class: `track-row ${cls}` });
+    const render = () => {
+      const song = curSong();
+      const cur = chosenTrack(song);
+      fill(el, song?.tracks.length
+        ? song.tracks.map((t) => h('button', {
+            class: `track-btn ${t.id === cur?.id ? 'on' : ''}`, 'aria-pressed': t.id === cur?.id ? 'true' : 'false',
+            onclick: () => { r.trackFor[song.id] = t.id; save(); refreshControls(); toast(`${t.name} chosen`); },
+          }, t.name))
+        : h('span', { class: 'muted' }, 'No tracks for this song yet.'));
     };
-    const mic = h('button', { class: 'btn icon mic', type: 'button', 'aria-label': 'Speak a command', onclick: async () => {
+    refreshers.add(render); render();
+    return el;
+  }
+
+  function startButtons(cls = '') {
+    const el = h('div', { class: `start-row ${cls}` });
+    const render = () => {
+      const track = chosenTrack(curSong());
+      const marks = track?.marks || [];
+      const letters = lettersIn(marks);
+      const hasBars = marks.some((m) => m.bar != null && m.bar !== '');
+      const barIn = h('input', { type: 'text', inputmode: 'numeric', class: 'bar-box', placeholder: 'Bar', 'aria-label': 'Bar number' });
+      const playBar = () => {
+        const bar = parseInt(barIn.value, 10);
+        if (!bar) { barIn.focus(); return; }
+        const res = timeForBar(marks, bar);
+        if (!res) { toast('No bar numbers marked on this track yet'); return; }
+        barIn.value = ''; barIn.blur();
+        playChosen(res.t, null, `from bar ${bar}${res.approx ? ' (about)' : ''}`);
+      };
+      barIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') playBar(); });
+      fill(el,
+        h('button', { class: 'start-btn', onclick: () => playChosen(0, null, 'from the top') }, '▶ From the top'),
+        letters.map((L) => h('button', { class: 'start-btn letter', onclick: () => {
+          const m = findLetter(marks, L); playChosen(m.t, null, `from letter ${L}`);
+        } }, L)),
+        hasBars ? h('span', { class: 'bar-group' }, barIn, h('button', { class: 'start-btn', onclick: playBar }, '▶ Bar')) : null,
+        track && !marks.length ? h('div', { class: 'hint' },
+          `${track.name} has no timestamps yet, so it can only play from the top. Add them in 🎼 Songs → ⏱ Timestamps.`) : null);
+    };
+    refreshers.add(render); render();
+    return el;
+  }
+
+  const voiceOn = () => localStorage.getItem('voiceOff') !== '1';
+
+  function controlButtons(input, go, compact) {
+    const mic = h('button', { class: `big-ctl mic ${compact ? 'compact' : ''}`, type: 'button', 'aria-label': 'Speak a command', onclick: async () => {
       if (isListening()) { stopListening(); return; }
       if (!voiceSupported) {
-        // No built-in recognition here: use the keyboard's dictation key instead.
         input.focus();
         toast('Tap the 🎤 on the keyboard and speak, then tap Go');
         return;
@@ -566,27 +683,48 @@ async function screenRehearsal(id, tab = 'play') {
       const wasPlaying = player.state.playing;
       if (wasPlaying) player.pause(); // so the mic hears you, not the track
       mic.classList.add('listening');
+      mic.lastChild.textContent = 'Listening…';
       input.value = '';
-      input.placeholder = 'Listening… say e.g. "alto bar 32"';
       try {
         const heard = await listen({ onInterim: (t) => { input.value = t; } });
         if (heard) { input.value = heard; go(); }
         else if (wasPlaying) player.resume();
       } catch (e) {
-        const msg = /not-allowed|service-not-allowed/.test(e.message)
+        toast(/not-allowed|service-not-allowed/.test(e.message)
           ? 'Microphone not allowed. Use the 🎤 on the keyboard instead, or allow the microphone in Settings.'
-          : 'Sorry, I didn\'t catch that. Try again, or type it.';
-        toast(msg);
+          : 'Sorry, I didn\'t catch that. Try again, or type it.');
       } finally {
         mic.classList.remove('listening');
-        input.placeholder = placeholder;
+        mic.lastChild.textContent = 'Speak';
       }
-    } }, '🎤');
-    const placeholder = input.placeholder;
+    } }, h('span', { class: 'ctl-icon' }, '🎤'), h('span', {}, 'Speak'));
+    return h('div', { class: `ctl-row ${compact ? 'compact' : ''}` },
+      voiceOn() ? mic : null,
+      h('button', { class: 'big-ctl stop', type: 'button', onclick: () => runCommand('stop') }, h('span', { class: 'ctl-icon' }, '⏹'), h('span', {}, 'Stop')),
+      h('button', { class: 'big-ctl', type: 'button', onclick: () => runCommand('again') }, h('span', { class: 'ctl-icon' }, '↺'), h('span', {}, 'Again')),
+      h('button', { class: 'big-ctl', type: 'button', onclick: () => runCommand('back 5') }, h('span', { class: 'ctl-icon' }, '⏪'), h('span', {}, 'Back 5s')));
+  }
+
+  function commandBox(compact = false) {
+    const input = h('input', {
+      type: 'text', class: 'grow cmd', placeholder: 'Or type: "letter B", "bar 32", "alto bar 32"',
+      autocapitalize: 'none', autocomplete: 'off', enterkeyhint: 'go', 'aria-label': 'Command',
+    });
+    const go = () => {
+      const v = input.value;
+      input.value = '';
+      runCommand(v);
+      if (compact) { toast(r.log[r.log.length - 1]?.text || ''); input.blur(); }
+    };
     const form = h('form', { class: 'row cmd-row', onsubmit: (e) => { e.preventDefault(); go(); } },
-      mic, input, h('button', { class: 'btn primary', type: 'submit' }, 'Go'),
-      h('button', { class: 'btn icon', type: 'button', 'aria-label': 'Stop', onclick: () => runCommand('stop') }, '⏹'));
-    return form;
+      input, h('button', { class: 'btn primary go', type: 'submit' }, 'Go'));
+    return h('div', { class: `play-panel ${compact ? 'compact' : ''}` },
+      compact ? null : h('div', { class: 'panel-label' }, 'Track'),
+      trackButtons(compact ? 'compact' : ''),
+      compact ? null : h('div', { class: 'panel-label' }, 'Start from'),
+      startButtons(compact ? 'compact' : ''),
+      controlButtons(input, go, compact),
+      form);
   }
 
   // ---- notes / todos
@@ -607,7 +745,7 @@ async function screenRehearsal(id, tab = 'play') {
     fill(songBar, 
       h('div', { class: 'row wrap' }, songs.map((x) => h('button', {
         class: `chip ${x.id === r.currentSongId ? 'on' : ''}`,
-        onclick: () => { r.currentSongId = x.id; save(); renderSongBar(); if (tab === 'play') renderSuggestions(); },
+        onclick: () => { r.currentSongId = x.id; save(); renderSongBar(); refreshControls(); },
       }, x.title))),
       s ? h('div', { class: 'row wrap' },
         s.scores.length
@@ -623,20 +761,11 @@ async function screenRehearsal(id, tab = 'play') {
   const tabBar = h('div', { class: 'seg' }, tabs.map(([k, label]) =>
     h('button', { class: `seg-btn ${k === tab ? 'on' : ''}`, 'data-tab': k, onclick: () => { tab = k; renderTab(); } }, label)));
 
-  const sugEl = h('div', { class: 'row wrap suggestions' });
-  function renderSuggestions() {
-    const s = curSong();
-    const curTrack = s?.tracks.find((t) => t.id === player.state.track?.id);
-    fill(sugEl, ...suggestionsFor(s, curTrack).map((x) =>
-      h('button', { class: 'chip', onclick: () => runCommand(x.command) }, x.label)));
-  }
-
   async function renderTab() {
     tabBar.querySelectorAll('.seg-btn').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
     if (tab === 'play') {
       renderLog();
-      renderSuggestions();
-      fill(tabBody, logEl, sugEl, commandBox());
+      fill(tabBody, commandBox(), logEl);
       logEl.scrollTop = logEl.scrollHeight;
     } else if (tab === 'notes') {
       const ta = h('textarea', { rows: 3, placeholder: 'Type a note, e.g. "Altos rushing at letter C. Breathe after bar 24."' });
@@ -702,12 +831,6 @@ async function screenRehearsal(id, tab = 'play') {
     }
   }
 
-  const offPlayer = player.onChange(() => { if (tab === 'play') renderSuggestionsThrottled(); });
-  let lastTrack = null;
-  function renderSuggestionsThrottled() {
-    if (player.state.track?.id !== lastTrack) { lastTrack = player.state.track?.id; renderSuggestions(); }
-  }
-  onLeave(offPlayer);
 
   renderSongBar();
   setScreen(r.title, [
@@ -843,13 +966,21 @@ async function screenMore() {
         h('li', {}, 'Tap "Add to Home Screen", then "Add".'),
         h('li', {}, 'Open Sectional from your home screen. It works without internet.'))),
     h('div', { class: 'card' },
+      h('h2', {}, '🎤 Voice button'),
+      h('label', { class: 'row check' },
+        h('input', { type: 'checkbox', checked: localStorage.getItem('voiceOff') !== '1',
+          onchange: (e) => { localStorage.setItem('voiceOff', e.target.checked ? '0' : '1'); toast(e.target.checked ? 'Voice button on' : 'Voice button off'); } }),
+        h('span', {}, 'Show the 🎤 Speak button in rehearsal')),
+      h('p', { class: 'muted small' }, 'Using a Bluetooth speaker? When the microphone is used, the iPad can move the sound off the speaker and back to the iPad. If that happens, turn the voice button off and use the track and letter buttons instead.')),
+    h('div', { class: 'card' },
       h('h2', {}, 'No sound from the speaker?'),
       h('ol', {},
         h('li', {}, 'Swipe down from the top-right corner to open Control Center.'),
         h('li', {}, 'Press and hold the music box, tap the AirPlay icon (triangle with circles), and choose your speaker.'),
         h('li', {}, 'Turn the volume up on both the iPad and the speaker.'),
         h('li', {}, 'Still nothing? Close Sectional fully (swipe it away) and open it again.'),
-        h('li', {}, 'Earbuds connected? Disconnect them: the iPad sends sound to only one place at a time.'))),
+        h('li', {}, 'Earbuds connected? Disconnect them: the iPad sends sound to only one place at a time.'),
+        h('li', {}, 'Lost the speaker after using the 🎤? Choose the speaker again in Control Center, and think about turning the voice button off (above).'))),
     h('div', { class: 'card' },
       h('h2', {}, 'Playing tracks by voice or typing'),
       h('pre', { class: 'help' }, HELP)),

@@ -6,7 +6,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('../vendor/pdfjs/pdf.worker.min
 
 // Renders every page of the PDF into `container`, lazily as pages scroll into view.
 // Returns a controller with zoom in/out and destroy().
-export async function renderScore(container, item) {
+export async function renderScore(container, item, { onPage } = {}) {
   const blob = await getBlob(item.blobId);
   if (!blob) throw new Error('The score file is missing.');
   const data = new Uint8Array(await blob.arrayBuffer());
@@ -52,11 +52,14 @@ export async function renderScore(container, item) {
     canvas.height = Math.floor(vp.height);
     canvas.style.width = '100%';
     canvas.style.height = 'auto';
+    canvas.className = 'pdf-canvas';
     p.task = page.render({ canvasContext: canvas.getContext('2d'), viewport: vp });
     try {
       await p.task.promise;
-      p.holder.style.height = 'auto';
-      p.holder.replaceChildren(canvas);
+      p.holder.style.height = `${width * (vp1.height / vp1.width)}px`;
+      p.holder.querySelector('.pdf-canvas')?.remove();
+      p.holder.prepend(canvas);
+      onPage?.(p.n, p.holder);
     } catch { /* cancelled by a zoom change */ }
   }
 

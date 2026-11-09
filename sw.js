@@ -1,5 +1,5 @@
 // Keeps the app working offline. Bump VERSION whenever app files change.
-const VERSION = 'sectional-v4';
+const VERSION = 'sectional-v5';
 const FILES = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ const FILES = [
   './js/timestamps.js',
   './js/pdfviewer.js',
   './js/voice.js',
+  './js/annotate.js',
   './vendor/pdfjs/pdf.min.mjs',
   './vendor/pdfjs/pdf.worker.min.mjs',
   './manifest.webmanifest',
