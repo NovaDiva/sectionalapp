@@ -2,6 +2,7 @@ import * as db from './db.js';
 import * as player from './player.js';
 import { parseCommand, canonicalVoice } from './commands.js';
 import { voiceSupported, listen, stopListening, isListening } from './voice.js';
+import { choirParts, setChoirParts, myParts, setMyParts, guessPart, partOf, visibleTracks } from './parts.js';
 import {
   formatTime, sortMarks, markTitle, lettersIn, parseTimestampTable, parseBarLetter, findLetter, timeForBar,
 } from './timestamps.js';
@@ -79,6 +80,8 @@ function modal(title, body, actions) {
 
 function guessTrackName(filename) {
   const base = filename.replace(/\.[^.]+$/, '');
+  const part = guessPart(base);
+  if (part) return part;
   const ws = base.toLowerCase().replace(/[_\-.]+/g, ' ').split(/\s+/);
   const nice = { soprano: 'Soprano', alto: 'Alto', tenor: 'Tenor', bass: 'Bass', full: 'Full mix', piano: 'Piano only' };
   for (let i = 0; i < ws.length; i++) {
@@ -87,6 +90,30 @@ function guessTrackName(filename) {
   }
   return base.replace(/[_]+/g, ' ');
 }
+
+// ---------------------------------------------------------------- parts picker
+
+// Big buttons to choose the part(s) this leader leads. Calls onSave(list).
+function partsPicker(onSave, { saveLabel = 'Save' } = {}) {
+  const chosen = new Set(myParts() || []);
+  const btns = choirParts().map((p) => {
+    const b = h('button', { class: `track-btn ${chosen.has(p) ? 'on' : ''}`, onclick: () => {
+      chosen.has(p) ? chosen.delete(p) : chosen.add(p);
+      b.classList.toggle('on', chosen.has(p));
+    } }, p);
+    return b;
+  });
+  return h('div', {},
+    h('div', { class: 'track-row' }, btns),
+    h('div', { class: 'row', style: 'margin-top:12px' },
+      h('button', { class: 'btn primary big', onclick: () => {
+        const list = choirParts().filter((p) => chosen.has(p));
+        setMyParts(list);
+        onSave(list);
+      } }, saveLabel)));
+}
+
+function partsText(list) { return list && list.length ? list.join(', ') : 'all parts'; }
 
 // ---------------------------------------------------------------- mini player
 
@@ -224,6 +251,7 @@ async function screenSongs() {
   ]);
 }
 
+let showAllParts = false;
 async function screenSong(id) {
   const song = await db.get('songs', id);
   if (!song) { location.hash = '#/songs'; return; }
@@ -244,7 +272,9 @@ async function screenSong(id) {
   const addTracks = async (files) => {
     for (const f of files) {
       if (!/^audio\//.test(f.type) && !/\.(mp3|m4a|wav|aac|aiff?|ogg)$/i.test(f.name)) { toast(`${f.name} is not an audio file`); continue; }
-      await db.addFile(id, 'track', f, guessTrackName(f.name));
+      const item = await db.addFile(id, 'track', f, guessTrackName(f.name));
+      item.part = guessPart(item.name);
+      await db.put('items', item);
     }
     toast(files.length > 1 ? 'Tracks added' : 'Track added');
     refresh();
@@ -277,6 +307,22 @@ async function screenSong(id) {
     });
   }));
 
+  const shownTracks = showAllParts ? tracks : visibleTracks(tracks);
+  const hiddenCount = tracks.length - visibleTracks(tracks).length;
+  const partSelect = (t) => {
+    const cur = partOf(t);
+    const sel = h('select', { class: 'part-select', 'aria-label': `Part for ${t.name}`, onchange: async () => {
+      const fresh = (await db.get('items', t.id)) || t;
+      fresh.part = sel.value || null;
+      await db.put('items', fresh);
+      toast(sel.value ? `${t.name} is for ${sel.value}` : `${t.name} is for everyone`);
+      refresh();
+    } },
+      h('option', { value: '', selected: cur == null }, 'For everyone (full mix, piano)'),
+      choirParts().map((p) => h('option', { value: p, selected: cur === p }, `Part: ${p}`)));
+    return sel;
+  };
+
   setScreen(song.title, [
     h('div', { class: 'card' },
       h('div', { class: 'row space' },
@@ -293,15 +339,19 @@ async function screenSong(id) {
       h('div', { class: 'row space' },
         h('h2', {}, '🎵 Tracks'),
         fileButton('+ Add tracks', 'audio/*,.mp3,.m4a,.wav', true, addTracks, 'btn primary')),
-      tracks.length
-        ? tracks.map((t) => h('div', { class: 'item-row' },
+      hiddenCount ? h('div', { class: 'row space' },
+        h('span', { class: 'muted' }, showAllParts ? 'Showing every part.' : `Showing ${partsText(myParts())} and tracks for everyone.`),
+        h('button', { class: 'btn', onclick: () => { showAllParts = !showAllParts; refresh(); } },
+          showAllParts ? 'Only my parts' : `Show other parts (${hiddenCount})`)) : null,
+      shownTracks.length
+        ? shownTracks.map((t) => h('div', { class: 'item-row' },
             h('button', { class: 'btn icon play', 'data-track': t.id, 'aria-label': `Play ${t.name}`, onclick: () => playTrack(t) },
               player.state.track?.id === t.id && player.state.playing ? '⏸' : '▶'),
-            h('div', { class: 'grow' }, h('div', { class: 'item-title' }, t.name)),
+            h('div', { class: 'grow' }, h('div', { class: 'item-title' }, t.name), partSelect(t)),
             h('a', { class: 'btn', href: `#/marks/${t.id}` }, `⏱ Timestamps (${(t.marks || []).length})`),
             h('button', { class: 'btn icon', 'aria-label': 'Rename', onclick: () => rename(t) }, '✎'),
             h('button', { class: 'btn icon danger', 'aria-label': 'Delete', onclick: () => remove(t) }, '🗑')))
-        : h('p', { class: 'muted' }, 'Add the full mix and the part tracks (Soprano, Alto, Tenor, Bass). You can pick several files at once.'),
+        : h('p', { class: 'muted' }, tracks.length ? 'No tracks for your part yet.' : 'Add the full mix and the part tracks (e.g. Alto 1, Alto 2, Tops). You can pick several files at once.'),
     ),
     h('div', { class: 'row end' },
       h('button', { class: 'btn', onclick: async () => {
@@ -469,6 +519,10 @@ async function screenRehearsalHome() {
   const songs = await db.getAll('songs');
 
   setScreen('Rehearsal', [
+    myParts() === null ? h('div', { class: 'card setup' },
+      h('h2', {}, '👋 Which part(s) do you lead?'),
+      h('p', {}, 'Tap your part (or parts). The app will then show only your tracks, plus tracks for everyone like the full mix. You can change this any time in ❔ Help.'),
+      partsPicker(() => { toast('Saved'); screenRehearsalHome(); })) : null,
     open.map((r) => h('a', { class: 'hero continue', href: `#/rehearsal/${r.id}` },
       h('div', { class: 'hero-icon' }, '▶'),
       h('div', {}, h('div', { class: 'hero-title' }, `Continue: ${r.title}`), h('div', {}, fmtDate(r.date))))),
@@ -493,7 +547,8 @@ function todoText(t, songs) {
 
 async function screenRehearsalNew() {
   const songs = (await db.getAll('songs')).sort((a, b) => a.title.localeCompare(b.title));
-  const titleIn = h('input', { type: 'text', value: 'Sectional', class: 'grow', 'aria-label': 'Rehearsal name' });
+  const mine = myParts();
+  const titleIn = h('input', { type: 'text', value: mine?.length ? `${mine.join(' & ')} sectional` : 'Sectional', class: 'grow', 'aria-label': 'Rehearsal name' });
   const dateIn = h('input', { type: 'date', value: todayISO(), 'aria-label': 'Date' });
   const chosen = new Set();
   const songList = h('div', { class: 'list' }, songs.map((s) => {
@@ -504,7 +559,7 @@ async function screenRehearsalNew() {
   setScreen('New rehearsal', [
     h('div', { class: 'card' },
       h('h2', {}, 'Which section?'),
-      h('div', { class: 'row wrap' }, ['Soprano', 'Alto', 'Tenor', 'Bass'].map((v) =>
+      h('div', { class: 'row wrap' }, (mine?.length ? mine : choirParts()).map((v) =>
         h('button', { class: 'chip', onclick: () => { titleIn.value = `${v} sectional`; } }, v))),
       h('div', { class: 'row' }, titleIn, dateIn)),
     h('div', { class: 'card' }, h('h2', {}, 'Which songs?'), songList),
@@ -540,6 +595,7 @@ async function screenRehearsal(id, tab = 'play') {
   const r = await db.get('rehearsals', id);
   if (!r) { location.hash = '#/'; return; }
   const songs = await db.songsWithTracks(r.songIds);
+  for (const s of songs) { s.allTracks = s.tracks; if (!r.showAllParts) s.tracks = visibleTracks(s.tracks); }
   r.currentSongId = r.currentSongId && songs.some((s) => s.id === r.currentSongId) ? r.currentSongId : songs[0]?.id;
   const save = () => db.put('rehearsals', r);
   const curSong = () => songs.find((s) => s.id === r.currentSongId);
@@ -719,7 +775,14 @@ async function screenRehearsal(id, tab = 'play') {
     const form = h('form', { class: 'row cmd-row', onsubmit: (e) => { e.preventDefault(); go(); } },
       input, h('button', { class: 'btn primary go', type: 'submit' }, 'Go'));
     return h('div', { class: `play-panel ${compact ? 'compact' : ''}` },
-      compact ? null : h('div', { class: 'panel-label' }, 'Track'),
+      compact ? null : h('div', { class: 'row space' },
+        h('div', { class: 'panel-label' }, 'Track'),
+        (curSong()?.allTracks.length || 0) > (visibleTracks(curSong()?.allTracks || []).length) || r.showAllParts
+          ? h('button', { class: 'link-btn', type: 'button', onclick: async () => {
+              r.showAllParts = !r.showAllParts; await save();
+              cleanup.forEach((fn) => fn()); cleanup = []; screenRehearsal(r.id, tab);
+            } }, r.showAllParts ? 'Show only my parts' : 'Show all parts')
+          : null),
       trackButtons(compact ? 'compact' : ''),
       compact ? null : h('div', { class: 'panel-label' }, 'Start from'),
       startButtons(compact ? 'compact' : ''),
@@ -965,6 +1028,26 @@ async function screenMore() {
         h('li', {}, 'Tap the Share button (square with an arrow).'),
         h('li', {}, 'Tap "Add to Home Screen", then "Add".'),
         h('li', {}, 'Open Sectional from your home screen. It works without internet.'))),
+    h('div', { class: 'card' },
+      h('h2', {}, '🎶 My parts'),
+      h('p', {}, `You lead: ${partsText(myParts())}. Tap your part(s), then Save. The app shows only those tracks, plus tracks for everyone.`),
+      partsPicker(() => { toast('Saved'); screenMore(); })),
+    h('div', { class: 'card' },
+      h('h2', {}, 'Choir parts list'),
+      h('p', { class: 'muted small' }, 'The parts used in your choir. Tracks are matched to these by name.'),
+      h('div', { class: 'row wrap' }, choirParts().map((p) => h('span', { class: 'chip static' }, p,
+        h('button', { class: 'chip-x', 'aria-label': `Remove ${p}`, onclick: () => {
+          if (!confirm(`Remove "${p}" from the parts list?`)) return;
+          setChoirParts(choirParts().filter((x) => x !== p));
+          setMyParts((myParts() || []).filter((x) => x !== p));
+          screenMore();
+        } }, '✕')))),
+      h('button', { class: 'btn', onclick: () => {
+        const name = prompt('New part name (e.g. Tenor, Baritone):');
+        if (!name || !name.trim() || choirParts().includes(name.trim())) return;
+        setChoirParts([...choirParts(), name.trim()]);
+        screenMore();
+      } }, '+ Add a part')),
     h('div', { class: 'card' },
       h('h2', {}, '🎤 Voice button'),
       h('label', { class: 'row check' },

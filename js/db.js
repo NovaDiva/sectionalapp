@@ -121,6 +121,7 @@ function blobToDataURL(blob) {
 export async function exportAll({ includeFiles }) {
   const data = { app: 'sectional-app', version: 1, exportedAt: new Date().toISOString() };
   for (const name of ['songs', 'items', 'rehearsals', 'todos']) data[name] = await getAll(name);
+  try { data.choirParts = JSON.parse(localStorage.getItem('choirParts') || 'null'); } catch { /* none */ }
   if (includeFiles) {
     data.blobs = [];
     for (const it of data.items) {
@@ -151,5 +152,7 @@ export async function importAll(file) {
     await put('items', it);
   }
   for (const name of ['songs', 'rehearsals', 'todos']) for (const rec of data[name] || []) await put(name, rec);
+  // The choir's parts list comes across; each leader keeps their own "my parts".
+  if (Array.isArray(data.choirParts)) localStorage.setItem('choirParts', JSON.stringify(data.choirParts));
   return { songs: (data.songs || []).length, rehearsals: (data.rehearsals || []).length, skipped };
 }

@@ -279,3 +279,10 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
 .swatch.on { box-shadow: 0 0 0 3px var(--brand); }
 .tool-hint { font-size: 15px; color: #6b5300; margin-top: 6px; }
 .overlay-bar .btn { min-height: 48px; }
+
+/* parts */
+.card.setup { border: 2px solid var(--brand); }
+.part-select { width: auto !important; min-height: 44px; font-size: 16px; padding: 6px 10px; margin-top: 4px; max-width: 100%; }
+.link-btn { background: none; border: 0; color: var(--brand); font: inherit; font-weight: 700; text-decoration: underline; min-height: 44px; padding: 0 6px; cursor: pointer; }
+.chip.static { display: inline-flex; align-items: center; gap: 4px; cursor: default; padding-right: 6px; }
+.chip-x { border: 0; background: none; color: var(--danger); font-size: 18px; min-width: 40px; min-height: 40px; cursor: pointer; }

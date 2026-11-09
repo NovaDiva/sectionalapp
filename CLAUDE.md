@@ -17,6 +17,10 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
   The 🎤 voice button can be switched off in Help (Bluetooth speakers drop when the mic is used).
 - Score viewer: ✏️ Mark up (pen, highlighter, typed notes, eraser, undo), saved in item.annotations
   as fractions of the page size; 🎵 Player toggles the compact track/letter panel.
+- Parts: the choir has Soprano 1, Soprano 2, Alto 1, Alto 2 (4-part) and Tops, Middles, Lowers (3-part).
+  Each leader picks "my parts" (first-run card / Help), and only those tracks show, plus tracks for everyone
+  (item.part = null: full mix, piano). Track part is guessed from the name and can be changed on the song page.
+  Parts list is editable in Help and travels in backups; "my parts" stays per iPad (localStorage). See js/parts.js.
 - Rehearsal record: songs/letters/bars covered, free-text notes, a "Fix next time" list that carries over.
 - Summary is shared with the iPad share sheet (email/WhatsApp).
 
@@ -30,7 +34,8 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
 ## Status
 v5 (9 Nov 2026): after Carol's first rehearsal: big Play controls + track buttons, score mark-up,
 voice on/off switch. Earlier: voice commands, Bluetooth sound-mode fix, update banner.
-v6: on Carol's iPad the mark-up toolbar showed but strokes didn't draw. Fix: non-passive touchstart/move
+v8 (10 Nov): parts + my-parts filtering. v6/v7: Pencil drawing fixed (Carol confirmed) and fresh-file fetching.
+Earlier v6 note: on Carol's iPad the mark-up toolbar showed but strokes didn't draw. Fix: non-passive touchstart/move
 preventDefault on the drawing canvas (iPad scroll/Scribble was taking the stroke), canvas memory caps,
 on-screen error toasts. Not yet confirmed on her iPad. No WebKit browser here, so test on the iPad.
 Open question: does the Bluetooth speaker stay connected with the mic (audioSession fix)?

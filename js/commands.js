@@ -12,6 +12,9 @@ const VOICES = {
   alto: ['alto', 'altos', 'alt'],
   tenor: ['tenor', 'tenors', 'ten'],
   bass: ['bass', 'basses', 'bari', 'baritone', 'baritones'],
+  tops: ['tops', 'toppers', 'topline'],
+  middles: ['middle', 'middles', 'mids', 'mid'],
+  lowers: ['lower', 'lowers', 'low', 'lows', 'bottoms'],
   full: ['full', 'all', 'mix', 'everyone', 'tutti', 'together', 'choir', 'everybody'],
   piano: ['piano', 'accompaniment', 'acc', 'accomp', 'backing', 'instrumental'],
 };
@@ -40,7 +43,7 @@ const SPOKEN_LETTERS = {
   you: 'U', vee: 'V', ex: 'X', why: 'Y', zed: 'Z', zee: 'Z',
 };
 const LETTER_CUES = new Set(['letter', 'rehearsal', 'figure', 'from', 'to', 'until', 'till', 'at', 'section']);
-const SOUNDS_LIKE = { base: 'bass', bases: 'basses', tenner: 'tenor', tenners: 'tenors', altar: 'alto', altos: 'altos',
+const SOUNDS_LIKE = { base: 'bass', bases: 'basses', tenner: 'tenor', tenners: 'tenors', altar: 'alto', altos: 'altos', tops: 'tops', middle: 'middle', lower: 'lower',
   soprano: 'soprano', sopranos: 'sopranos', bars: 'bars', bah: 'bar', baa: 'bar', ba: 'bar' };
 
 export function normalizeSpoken(input) {
@@ -49,6 +52,9 @@ export function normalizeSpoken(input) {
   text = text.replace(/(\w)['’]s\b/gi, '$1s').replace(/(\w)s['’]/gi, '$1s');
   // Keep "note: ..." and "fix: ..." text as spoken, only tidy the command word.
   if (/^(note|notes|fix|todo|to do|next time|work on)\b/i.test(text)) return text;
+
+  // "first altos" / "1st sopranos" -> "altos 1"; "second altos" -> "altos 2"
+  text = text.replace(/\b(first|1st)\s+([a-z]+)/gi, '$2 1').replace(/\b(second|2nd)\s+([a-z]+)/gi, '$2 2');
 
   const out = [];
   const toks = text.split(/\s+/);

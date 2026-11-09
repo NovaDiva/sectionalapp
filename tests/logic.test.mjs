@@ -144,3 +144,32 @@ test('spoken commands are understood', () => {
   assert.equal(parseCommand('Stop.', ctx).type, 'pause');
   assert.deepEqual(parseCommand('Note: altos flat at letter C.', ctx), { type: 'note', text: 'altos flat at letter C' });
 });
+
+test('three-part and numbered parts', async () => {
+  const { guessPart, visibleTracks } = await import('../js/parts.js');
+  const parts = ['Soprano 1', 'Soprano 2', 'Alto 1', 'Alto 2', 'Tops', 'Middles', 'Lowers'];
+  assert.equal(guessPart('River_Alto1.mp3', parts), 'Alto 1');
+  assert.equal(guessPart('Alto 2', parts), 'Alto 2');
+  assert.equal(guessPart('S2 practice', parts), 'Soprano 2');
+  assert.equal(guessPart('Middles', parts), 'Middles');
+  assert.equal(guessPart('Top line', parts), 'Tops');
+  assert.equal(guessPart('Full mix', parts), null);
+  assert.equal(guessPart('Piano only', parts), null);
+  const tracks = [{ name: 'Full mix' }, { name: 'Alto 1' }, { name: 'Alto 2' }, { name: 'Lowers' }, { name: 'Tops' }];
+  assert.deepEqual(visibleTracks(tracks, ['Alto 1', 'Lowers'], parts).map((t) => t.name), ['Full mix', 'Alto 1', 'Lowers']);
+  assert.equal(visibleTracks(tracks, null, parts).length, 5);
+  // an explicit part on the track wins over its name
+  assert.deepEqual(visibleTracks([{ name: 'Guide track', part: 'Middles' }], ['Middles'], parts).length, 1);
+
+  const c3 = { songs: [{ id: 'x', title: 'Shenandoah', tracks: [
+    { id: 'f', name: 'Full mix', marks: marksFull }, { id: 'tp', name: 'Tops', marks: marksFull },
+    { id: 'md', name: 'Middles', marks: marksFull }, { id: 'lw', name: 'Lowers', marks: marksFull },
+    { id: 'a1', name: 'Alto 1', marks: marksFull }, { id: 'a2', name: 'Alto 2', marks: marksFull }] }] };
+  assert.equal(parseCommand('middles letter B', c3).trackId, 'md');
+  assert.equal(parseCommand('lowers bar 15', c3).trackId, 'lw');
+  assert.equal(parseCommand('tops from the top', c3).trackId, 'tp');
+  assert.equal(parseCommand('tops from the top', c3).start, 0);
+  assert.equal(parseCommand('first altos letter A', c3).trackId, 'a1');
+  assert.equal(parseCommand('second altos bar 15', c3).trackId, 'a2');
+  assert.equal(parseCommand('alto two letter C', c3).trackId, 'a2');
+});
