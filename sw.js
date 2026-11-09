@@ -1,5 +1,5 @@
 // Keeps the app working offline. Bump VERSION whenever app files change.
-const VERSION = 'sectional-v3';
+const VERSION = 'sectional-v4';
 const FILES = [
   './',
   './index.html',
@@ -34,7 +34,9 @@ self.addEventListener('activate', (e) => {
 // Network first (so updates arrive), falling back to the saved copy when offline.
 self.addEventListener('fetch', (e) => {
   const req = e.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
+  const url = new URL(req.url);
+  if (req.method !== 'GET' || url.origin !== location.origin) return;
+  if (url.pathname.endsWith('/sw.js')) return; // version checks always go to the network
   e.respondWith(
     fetch(req)
       .then((res) => {

@@ -862,6 +862,7 @@ async function screenMore() {
         h('button', { class: 'btn', onclick: () => saveBackup(false) }, '💾 Notes & timestamps only')),
       h('p', { class: 'muted small' }, '"Everything" includes the scores and tracks, so the file can be large. Use it to copy your setup to another iPad.'),
       h('div', { class: 'row' }, fileButton('⤒ Restore a backup', 'application/json,.json', false, restore))),
+    h('p', { class: 'muted small center', id: 'app-version' }, versionText()),
   ]);
 }
 
@@ -903,6 +904,40 @@ setupMini();
 route();
 
 if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
+// ---------------------------------------------------------------- updates
+// The version lives in one place: VERSION in sw.js. We note it when the app
+// starts, check again whenever the app comes back on screen, and show a banner
+// when a newer one is online. Songs and notes are never touched by an update.
+let runningVersion = null;
+async function onlineVersion() {
+  try {
+    const res = await fetch(`./sw.js?check=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    return (await res.text()).match(/VERSION = '([^']+)'/)?.[1] || null;
+  } catch { return null; } // offline
+}
+function versionText() { return `App version: ${(runningVersion || '').replace('sectional-', '') || 'checking…'}`; }
+async function checkForUpdate() {
+  const v = await onlineVersion();
+  if (!v) return;
+  if (!runningVersion) {
+    runningVersion = v;
+    const el = document.getElementById('app-version');
+    if (el) el.textContent = versionText();
+    return;
+  }
+  if (v !== runningVersion) document.getElementById('update').hidden = false;
+}
+document.getElementById('update-btn').onclick = async () => {
+  const btn = document.getElementById('update-btn');
+  btn.textContent = 'Updating…';
+  try { await (await navigator.serviceWorker?.getRegistration())?.update(); } catch { /* offline */ }
+  location.reload();
+};
+checkForUpdate();
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkForUpdate(); });
+setInterval(checkForUpdate, 30 * 60 * 1000);
+
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }

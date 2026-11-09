@@ -205,3 +205,8 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
   .bar-in, .let-in { width: 70px !important; }
   .mark-row input.grow { flex-basis: 100%; }
 }
+
+/* update banner */
+.update { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap;
+  padding: 10px 16px; background: #fff3c4; border-bottom: 1px solid #e6d58a; font-weight: 600; }
+.update .btn { background: var(--brand); border-color: var(--brand); color: #fff; }

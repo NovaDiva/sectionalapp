@@ -20,8 +20,11 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
 ## Working on it
 - `npm test` runs the unit tests (command parser, spoken phrases, timestamps).
 - Run locally with `python3 -m http.server`. Check flows in Playwright at iPad size (1024x1366).
-- Bump `VERSION` in `sw.js` on every change to app files, or installed iPads keep the old copy.
+- Bump `VERSION` in `sw.js` on every change to app files. The app compares it with the online copy
+  and shows a "Tap to update" banner, so leaders never need to reopen the link (that makes a new, empty copy).
 - iPad audio must start from a tap: keep `player.prepare()` before commands and `player.unlock()` on the mic tap.
 
 ## Status
-Version 1 plus voice commands delivered on 8 Nov 2026. Waiting for Carol's feedback from real iPad use.
+v4 (9 Nov 2026): version 1 + voice commands + Bluetooth speaker sound fix + update banner.
+Carol tested it in a real rehearsal and has a list of changes coming next.
+Reminder for Carol: each Safari tab or Home Screen icon has its own separate storage.
