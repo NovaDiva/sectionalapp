@@ -24,6 +24,8 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
   (item.part = null: full mix, piano). Track part is guessed from the name and can be changed on the song page.
   Parts list is editable in Help and travels in backups; "my parts" stays per iPad (localStorage). See js/parts.js.
 - Rehearsal record: songs/letters/bars covered, free-text notes, a "Fix next time" list that carries over.
+- Speed: slow down only (Normal, 90…50%), pitch preserved, remembered in localStorage; buttons in rehearsal,
+  score player and Timestamps screen; voice "slower / half speed / speed 80 / normal speed". No speeding up.
 - Summary is shared with the iPad share sheet (email/WhatsApp).
 
 ## Working on it
@@ -36,6 +38,7 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
 ## Status
 v5 (9 Nov 2026): after Carol's first rehearsal: big Play controls + track buttons, score mark-up,
 voice on/off switch. Earlier: voice commands, Bluetooth sound-mode fix, update banner.
+v12 (10 Nov): slow-down speed control.
 v11 (10 Nov): ＋ Add song in a running rehearsal (tick/untick songs).
 v10 (10 Nov): read timestamps printed on the score (Timestamps screen + rehearsal hint button).
 v9 (10 Nov): new rehearsal has a real part choice (r.parts) that filters its tracks. v8: parts + my-parts filtering. v6/v7: Pencil drawing fixed (Carol confirmed) and fresh-file fetching.

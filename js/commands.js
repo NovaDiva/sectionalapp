@@ -131,6 +131,13 @@ export function parseCommand(input, ctx) {
   m = lower.match(/^(forward|skip|skip forward|ahead)\s*(\d+)?\s*(s|sec|secs|seconds)?$/);
   if (m) return { type: 'seek', by: Number(m[2]) || 5 };
   if (/^(help|\?|what can i (say|type))/.test(lower)) return { type: 'help' };
+  // Speed: "slower", "half speed", "normal speed", "speed 80", "80 percent", "play at 70%"
+  if (/^(normal|full|regular|original)( speed| tempo)?$|^(speed|tempo) (normal|100)/.test(lower)) return { type: 'speed', rate: 1 };
+  if (/\bhalf (speed|tempo)\b/.test(lower)) return { type: 'speed', rate: 0.5 };
+  if (/^(slower|slow( it)? down|a bit slower|little slower)$/.test(lower)) return { type: 'speed', by: -0.1 };
+  if (/^(faster|speed( it)? up|a bit faster|little faster)$/.test(lower)) return { type: 'speed', by: 0.1 };
+  m = lower.match(/^(?:play at |set )?(?:speed|tempo)?\s*(?:to |at )?(\d{2,3})\s*(%|percent|per cent)?(?: speed| tempo)?$/);
+  if (m && (m[2] || /speed|tempo/.test(lower))) return { type: 'speed', rate: Math.min(1, Number(m[1]) / 100) };
 
   return parsePlay(text, ctx || { songs: [] });
 }

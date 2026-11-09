@@ -160,6 +160,20 @@ async function importScoreTimes(track, scores) {
   return fresh.marks;
 }
 
+// ---------------------------------------------------------------- speed buttons
+
+// Normal · 90% · 80% · 70% · 60% · 50% (slow down only; pitch stays the same).
+function speedButtons(compact = false) {
+  const btns = player.SPEEDS.map((r) => h('button', {
+    class: `speed-btn ${player.getSpeed() === r ? 'on' : ''}`, 'data-rate': r, type: 'button',
+    'aria-label': r === 1 ? 'Normal speed' : `${Math.round(r * 100)} percent speed`,
+    onclick: () => { player.setSpeed(r); toast(r === 1 ? 'Normal speed' : `Playing at ${player.speedLabel(r)}`); },
+  }, player.speedLabel(r)));
+  const el = h('div', { class: `speed-row ${compact ? 'compact' : ''}` }, compact ? h('span', { class: 'speed-label' }, '🐢') : null, btns);
+  onLeave(player.onChange(() => btns.forEach((b) => b.classList.toggle('on', Number(b.dataset.rate) === player.getSpeed()))));
+  return el;
+}
+
 // ---------------------------------------------------------------- mini player
 
 function renderMini() {
@@ -539,6 +553,8 @@ async function screenMarks(trackId) {
         h('button', { class: 'btn icon', 'aria-label': 'Forward 5 seconds', onclick: () => player.seekBy(5) }, '5 ⏩'),
         timeEl),
       range,
+      h('div', { class: 'row space' }, h('span', { class: 'muted small' }, 'Slow it down to make marking easier (the times stay correct):')),
+      speedButtons(),
       markBtn,
     ),
     h('div', { class: 'card' },
@@ -653,6 +669,7 @@ const HELP = [
   '• bars 10-24 (stops after bar 24) · B to C',
   '• river tenor from the top (another song: start with part of its title)',
   '• stop · again · back 10 · forward 5',
+  '• slower · half speed · speed 80 · normal speed',
   '• note: altos flat at C',
   '• fix: tuning in bar 40 (adds to "Fix next time")',
   'Letters and bars need the track\'s timestamps (🎼 Songs → ⏱ Timestamps).',
@@ -718,6 +735,11 @@ async function screenRehearsal(id, tab = 'play') {
       case 'seek': player.seekBy(a.by); addLog('app', `${a.by < 0 ? 'Back' : 'Forward'} ${Math.abs(a.by)} seconds.`); break;
       case 'note': addNote(a.text); addLog('app', 'Note saved.'); break;
       case 'todo': addTodo(a.text); addLog('app', 'Added to "Fix next time".'); break;
+      case 'speed': {
+        const rate = player.setSpeed(a.rate ?? player.getSpeed() + a.by);
+        addLog('app', rate === 1 ? 'Normal speed.' : `Playing at ${player.speedLabel(rate)} speed.`);
+        break;
+      }
       case 'help': addLog('app', HELP); break;
       case 'error': addLog('app', a.reply); break;
       default: break;
@@ -860,6 +882,8 @@ async function screenRehearsal(id, tab = 'play') {
       compact ? null : h('div', { class: 'panel-label' }, 'Start from'),
       startButtons(compact ? 'compact' : ''),
       controlButtons(input, go, compact),
+      compact ? null : h('div', { class: 'panel-label' }, 'Speed'),
+      speedButtons(compact),
       form);
   }
 

@@ -294,3 +294,14 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
 .btn.wide { display: flex; }
 
 .chip.add-song { border-style: dashed; border-color: var(--brand); color: var(--brand); font-weight: 700; }
+
+/* speed */
+.speed-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.speed-btn {
+  min-height: 56px; min-width: 76px; padding: 0 14px; border-radius: 14px; border: 1.5px solid var(--line);
+  background: #fff; font: inherit; font-size: 18px; font-weight: 700; color: var(--text); cursor: pointer;
+}
+.speed-btn.on { background: #1e7b45; border-color: #1e7b45; color: #fff; }
+.speed-row.compact { flex-wrap: nowrap; overflow-x: auto; }
+.speed-row.compact .speed-btn { min-height: 48px; min-width: 64px; font-size: 16px; flex: none; }
+.speed-label { font-size: 24px; }

@@ -195,3 +195,13 @@ test('times printed on a score are read as marks', async () => {
   const split = marksFromTextItems([[{ str: '1:40', x: 8, y: 100, h: 8 }, { str: '/ 2:41', x: 28, y: 100, h: 8 }, { str: '30', x: 62, y: 99, h: 7 }]]);
   assert.deepEqual(split.map((m) => [m.t, m.bar]), [[100, 30], [161, 30]]);
 });
+
+test('speed commands', () => {
+  assert.deepEqual(parseCommand('slower', ctx), { type: 'speed', by: -0.1 });
+  assert.deepEqual(parseCommand('Half speed', ctx), { type: 'speed', rate: 0.5 });
+  assert.deepEqual(parseCommand('normal speed', ctx), { type: 'speed', rate: 1 });
+  assert.deepEqual(parseCommand('speed 80', ctx), { type: 'speed', rate: 0.8 });
+  assert.deepEqual(parseCommand('70 percent', ctx), { type: 'speed', rate: 0.7 });
+  assert.deepEqual(parseCommand('play at 60%', ctx), { type: 'speed', rate: 0.6 });
+  assert.equal(parseCommand('alto bar 70', ctx).type, 'play'); // a bar number is not a speed
+});

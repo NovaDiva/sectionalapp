@@ -15,6 +15,26 @@ export function setSoundMode(type) {
 setSoundMode('playback');
 
 const audio = new Audio();
+
+// ---- playback speed (slow down only; pitch stays the same)
+export const SPEEDS = [1, 0.9, 0.8, 0.7, 0.6, 0.5];
+let speed = Number((typeof localStorage !== 'undefined' && localStorage.getItem('speed')) || 1);
+if (!SPEEDS.includes(speed)) speed = 1;
+function applySpeed() {
+  audio.preservesPitch = true;
+  audio.webkitPreservesPitch = true; // older Safari
+  audio.defaultPlaybackRate = speed;
+  audio.playbackRate = speed;
+}
+export function getSpeed() { return speed; }
+export function setSpeed(rate) {
+  speed = SPEEDS.reduce((best, r) => (Math.abs(r - rate) < Math.abs(best - rate) ? r : best), 1);
+  try { localStorage.setItem('speed', String(speed)); } catch { /* private mode */ }
+  applySpeed();
+  emit();
+  return speed;
+}
+export function speedLabel(r = speed) { return r === 1 ? 'Normal' : `${Math.round(r * 100)}%`; }
 audio.preload = 'auto';
 const urls = new Map(); // blobId -> object URL
 let pendingSeek = null;
@@ -35,6 +55,8 @@ export function onChange(fn) { listeners.add(fn); return () => listeners.delete(
 const emit = () => listeners.forEach((fn) => fn(state));
 
 ['play', 'pause', 'ended', 'loadedmetadata', 'durationchange'].forEach((e) => audio.addEventListener(e, emit));
+// Safari can reset the speed when a new file loads, so set it again.
+['loadedmetadata', 'play'].forEach((e) => audio.addEventListener(e, () => { if (audio.playbackRate !== speed) applySpeed(); }));
 audio.addEventListener('loadedmetadata', () => {
   if (pendingSeek != null) { audio.currentTime = pendingSeek; pendingSeek = null; }
 });
@@ -84,6 +106,7 @@ export function playFrom(item, start = 0, end = null, songTitle = '') {
     pendingSeek = start;
   }
   setSoundMode('playback');
+  applySpeed();
   audio.play().catch(() => {});
   emit();
   return true;
@@ -124,7 +147,7 @@ export function stop() { audio.pause(); stopAt = null; if (state.track) audio.cu
 
 export function describe() {
   if (!state.track) return '';
-  return `${state.songTitle ? state.songTitle + ' · ' : ''}${state.track.name}`;
+  return `${state.songTitle ? state.songTitle + ' · ' : ''}${state.track.name}${speed !== 1 ? ` · ${speedLabel()}` : ''}`;
 }
 export function timeText() { return `${formatTime(state.time)} / ${formatTime(state.duration)}`; }
 

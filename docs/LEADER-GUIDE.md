@@ -29,6 +29,7 @@ Our parts: Soprano 1, Soprano 2, Alto 1, Alto 2 (4-part songs) and Tops, Middles
 3. Each time a rehearsal letter or main phrase starts, tap the big orange **MARK** button.
 4. When the song ends, type the **bar number** and **letter** for each mark (e.g. 15 and A). Words are optional.
 5. Tap a time to check it. If it's a little early or late, use **−1s / +1s**.
+6. Fast song? Choose a slower **Speed** (e.g. 70%) before you start. The marked times are still correct at normal speed.
 
 Tips:
 - Did the part tracks come from the same recording? Open the Alto track, tap **⧉ Copy from another track**, choose Full mix, then check a few times and nudge them.
@@ -44,6 +45,7 @@ Tips:
    - **Start from:** tap **▶ From the top**, a letter (**A**, **B**, **C**…), or type a bar number and tap **▶ Bar**.
      Letters and bars need that track's timestamps. Without them, only "From the top" works.
    - Use the big **⏹ Stop**, **↺ Again** and **⏪ Back 5s** buttons.
+   - **Speed:** tap **90%**, **80%**, **70%**, **60%** or **50%** to slow the track down (the pitch stays the same). Tap **Normal** to go back. The speed stays until you change it, and shows in the player at the bottom (e.g. "· 80%"). You can also say "slower", "half speed", "speed 80" or "normal speed".
 3. **Voice (optional):** tap **🎤 Speak** and say e.g. "letter B", "bar 32", "alto 2 bar 32", "first altos letter C" or "middles from the top". Saying a part switches to that track.
    You can also type the same words in the box and tap **Go**.
    Using a Bluetooth speaker? The iPad may move the sound off the speaker when the microphone is used. If so, turn the voice button off in **❔ Help** and use the buttons.
