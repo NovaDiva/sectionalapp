@@ -115,6 +115,51 @@ function partsPicker(onSave, { saveLabel = 'Save' } = {}) {
 
 function partsText(list) { return list && list.length ? list.join(', ') : 'all parts'; }
 
+// ---------------------------------------------------------------- times printed on a score
+
+// Read the times printed on one of the song's score PDFs and save them as the
+// track's timestamps. Returns the track's new marks, or null if nothing changed.
+async function importScoreTimes(track, scores) {
+  if (!scores.length) { alert('This song has no score PDF yet. Add one on the song page first.'); return null; }
+  let score = scores[0];
+  if (scores.length > 1) {
+    const sel = h('select', {}, scores.map((sc) => h('option', { value: sc.id }, sc.name)));
+    const pick = await modal('Which score has the times on it?', sel,
+      [{ label: 'Cancel', value: () => null }, { label: 'Read it', cls: 'btn primary', value: () => sel.value }]);
+    if (!pick) return null;
+    score = scores.find((sc) => sc.id === pick);
+  }
+  toast('Reading the times on the score…');
+  let found = [];
+  try {
+    const { readScoreTimes } = await import('./scoretimes.js');
+    found = await readScoreTimes(await db.getBlob(score.blobId));
+  } catch (e) {
+    alert(`Sorry, the score could not be read. ${e.message || ''}`);
+    return null;
+  }
+  if (!found.length) {
+    alert('No times were found printed on this score. Use the MARK button to make them instead.');
+    return null;
+  }
+  const fresh = (await db.get('items', track.id)) || track;
+  const existing = fresh.marks || [];
+  const letters = lettersIn(found);
+  const body = h('div', {},
+    h('p', {}, `Found ${found.length} times on "${score.name}"${letters.length ? ` (letters ${letters.join(', ')})` : ''}, from ${formatTime(found[0].t)} to ${formatTime(found[found.length - 1].t)}.`),
+    h('p', { class: 'muted small' }, 'The printed times fit the recording they were made from (usually the full mix). On a part track they may be a little early or late. Check a few and use −1s / +1s.'));
+  const choice = await modal(`Use these times for ${track.name}?`, body, [
+    { label: 'Cancel', value: () => null },
+    existing.length ? { label: 'Add to my marks', value: () => 'add' } : null,
+    { label: existing.length ? 'Replace my marks' : 'Use these times', cls: 'btn primary', value: () => 'replace' },
+  ].filter(Boolean));
+  if (!choice) return null;
+  fresh.marks = sortMarks(choice === 'add' ? [...existing, ...found] : found);
+  await db.put('items', fresh);
+  toast(`${found.length} times added to ${track.name}`);
+  return fresh.marks;
+}
+
 // ---------------------------------------------------------------- mini player
 
 function renderMini() {
@@ -501,6 +546,11 @@ async function screenMarks(trackId) {
       listEl,
       h('div', { class: 'row wrap' },
         h('button', { class: 'btn', onclick: copyFrom }, '⧉ Copy from another track'),
+        h('button', { class: 'btn', onclick: async () => {
+          const scores = (await db.itemsForSong(track.songId)).filter((i) => i.kind === 'score');
+          const marks = await importScoreTimes(track, scores);
+          if (marks) { track.marks = marks; renderList(); }
+        } }, '📄 Use times from the score'),
         h('button', { class: 'btn', onclick: pasteTable }, '📋 Paste a table'),
         h('button', { class: 'btn danger', onclick: async () => {
           if (!track.marks.length || !confirm('Delete all marks on this track?')) return;
@@ -737,7 +787,12 @@ async function screenRehearsal(id, tab = 'play') {
         } }, L)),
         hasBars ? h('span', { class: 'bar-group' }, barIn, h('button', { class: 'start-btn', onclick: playBar }, '▶ Bar')) : null,
         track && !marks.length ? h('div', { class: 'hint' },
-          `${track.name} has no timestamps yet, so it can only play from the top. Add them in 🎼 Songs → ⏱ Timestamps.`) : null);
+          h('div', {}, `${track.name} has no timestamps yet, so it can only play from the top.`),
+          curSong()?.scores.length ? h('button', { class: 'btn primary', style: 'margin-top:8px', onclick: async () => {
+            const newMarks = await importScoreTimes(track, curSong().scores);
+            if (newMarks) { track.marks = newMarks; refreshControls(); }
+          } }, '📄 Use the times printed on the score') : null,
+          h('div', { class: 'small', style: 'margin-top:6px' }, 'Or make your own in 🎼 Songs → ⏱ Timestamps.')) : null);
     };
     refreshers.add(render); render();
     return el;

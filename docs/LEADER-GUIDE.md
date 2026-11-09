@@ -33,6 +33,7 @@ Our parts: Soprano 1, Soprano 2, Alto 1, Alto 2 (4-part songs) and Tops, Middles
 Tips:
 - Did the part tracks come from the same recording? Open the Alto track, tap **⧉ Copy from another track**, choose Full mix, then check a few times and nudge them.
 - Already have the table from the "2027 Time Stamps" doc? Tap **📋 Paste a table**.
+- Score already has the times printed on it (the "with timestamps" PDFs)? Tap **📄 Use times from the score**. The app reads the printed times, bars and letters. You can still add or adjust marks yourself afterwards.
 
 ## 5. Run a rehearsal
 

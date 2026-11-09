@@ -11,7 +11,9 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
   Backup/restore in the Help tab is how setups are copied between iPads.
 - Timestamps are made in the app by tap-along (MARK button), with no AI. Each track has its own
   timestamps (part tracks don't share timing). Pasting a table from her "2027 Time Stamps" doc is
-  also supported (the format comes from her choir-track-timestamps skill).
+  also supported (the format comes from her choir-track-timestamps skill), and so is reading the times
+  printed on her "with timestamps" score PDFs (js/scoretimes.js: margin labels + bar numbers + letters
+  via PDF.js text). Printed times belong to one recording (usually the full mix).
 - Rehearsal Play tab: big track buttons (track names, choice stays per song), Start-from buttons
   (top / letters / bar box), big Speak/Stop/Again/Back 5s, a type box, then the chat log.
   The 🎤 voice button can be switched off in Help (Bluetooth speakers drop when the mic is used).
@@ -34,6 +36,7 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
 ## Status
 v5 (9 Nov 2026): after Carol's first rehearsal: big Play controls + track buttons, score mark-up,
 voice on/off switch. Earlier: voice commands, Bluetooth sound-mode fix, update banner.
+v10 (10 Nov): read timestamps printed on the score (Timestamps screen + rehearsal hint button).
 v9 (10 Nov): new rehearsal has a real part choice (r.parts) that filters its tracks. v8: parts + my-parts filtering. v6/v7: Pencil drawing fixed (Carol confirmed) and fresh-file fetching.
 Earlier v6 note: on Carol's iPad the mark-up toolbar showed but strokes didn't draw. Fix: non-passive touchstart/move
 preventDefault on the drawing canvas (iPad scroll/Scribble was taking the stroke), canvas memory caps,

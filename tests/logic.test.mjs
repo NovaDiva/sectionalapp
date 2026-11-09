@@ -173,3 +173,25 @@ test('three-part and numbered parts', async () => {
   assert.equal(parseCommand('second altos bar 15', c3).trackId, 'a2');
   assert.equal(parseCommand('alto two letter C', c3).trackId, 'a2');
 });
+
+test('times printed on a score are read as marks', async () => {
+  const { marksFromTextItems } = await import('../js/scoretimes.js');
+  const page1 = [
+    { str: 'Let the River Run', x: 150, y: 40, h: 20 },
+    { str: '0:00', x: 8, y: 150, h: 8 },
+    { str: 'A', x: 330, y: 120, h: 16 }, { str: '0:09 / 0:12', x: 352, y: 118, h: 8 },
+    { str: '9', x: 62, y: 270, h: 7 }, { str: '0:19', x: 8, y: 272, h: 8 },
+    { str: '15', x: 62, y: 410, h: 7 }, { str: 'B', x: 85, y: 395, h: 16 }, { str: '0:33', x: 8, y: 412, h: 8 },
+    { str: '2', x: 500, y: 810, h: 10 },
+  ];
+  const page2 = [{ str: '22', x: 62, y: 130, h: 7 }, { str: '~0:52', x: 8, y: 132, h: 8 }];
+  const marks = marksFromTextItems([page1, page2]);
+  assert.deepEqual(marks.map((m) => [m.t, m.bar, m.letter]), [
+    [0, 1, null], [9, null, 'A'], [12, null, 'A'], [19, 9, null], [33, 15, 'B'], [52, 22, null],
+  ]);
+  assert.match(marks[2].label, /repeat/);
+  assert.match(marks[5].label, /approx/);
+  // labels split into pieces are joined
+  const split = marksFromTextItems([[{ str: '1:40', x: 8, y: 100, h: 8 }, { str: '/ 2:41', x: 28, y: 100, h: 8 }, { str: '30', x: 62, y: 99, h: 7 }]]);
+  assert.deepEqual(split.map((m) => [m.t, m.bar]), [[100, 30], [161, 30]]);
+});
