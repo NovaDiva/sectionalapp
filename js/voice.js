@@ -2,6 +2,8 @@
 // iPad, Chrome on Android/desktop). Where it isn't available, the app falls
 // back to the microphone key on the iPad keyboard (dictation).
 
+import { setSoundMode } from './player.js';
+
 const Recognition = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
 
 export const voiceSupported = !!Recognition;
@@ -36,11 +38,13 @@ export function listen({ onInterim } = {}) {
     };
     rec.onerror = (e) => {
       active = null;
+      setSoundMode('playback');
       if (e.error === 'no-speech' || e.error === 'aborted') resolve('');
       else reject(new Error(e.error || 'voice-error'));
     };
-    rec.onend = () => { active = null; resolve((finalText || latest).trim()); };
-    try { rec.start(); } catch (err) { active = null; reject(err); }
+    rec.onend = () => { active = null; setSoundMode('playback'); resolve((finalText || latest).trim()); };
+    setSoundMode('play-and-record');
+    try { rec.start(); } catch (err) { active = null; setSoundMode('playback'); reject(err); }
   });
 }
 

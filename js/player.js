@@ -6,6 +6,14 @@
 import { getBlob } from './db.js';
 import { formatTime } from './timestamps.js';
 
+// Sound mode (iPadOS 16.4+ / Safari). 'playback' = music mode, so the iPad sends
+// sound to the chosen Bluetooth/AirPlay speaker. While the microphone is in use
+// we switch to 'play-and-record', then straight back (see voice.js).
+export function setSoundMode(type) {
+  try { if (navigator.audioSession) navigator.audioSession.type = type; } catch { /* not supported */ }
+}
+setSoundMode('playback');
+
 const audio = new Audio();
 audio.preload = 'auto';
 const urls = new Map(); // blobId -> object URL
@@ -75,6 +83,7 @@ export function playFrom(item, start = 0, end = null, songTitle = '') {
   } else {
     pendingSeek = start;
   }
+  setSoundMode('playback');
   audio.play().catch(() => {});
   emit();
   return true;
@@ -103,7 +112,7 @@ export function again() {
   return playFrom(state.track, state.lastStart, state.lastEnd, state.songTitle);
 }
 export function pause() { audio.pause(); }
-export function resume() { if (state.track) { stopAt = null; audio.play().catch(() => {}); } }
+export function resume() { if (state.track) { stopAt = null; setSoundMode('playback'); audio.play().catch(() => {}); } }
 export function toggle() { audio.paused ? resume() : pause(); }
 export function seekBy(sec) {
   if (!state.track) return;

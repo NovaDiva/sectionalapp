@@ -49,6 +49,14 @@ Tips:
 
 Tap **Finish & share**. Check the summary (you can edit it), then tap **📤 Share** to send it by email, Messages or WhatsApp. Past rehearsals stay under **🗂 Past**.
 
-## 6. Keep a backup
+## 6. No sound from the speaker?
+
+1. Swipe down from the top-right corner to open **Control Center**.
+2. Press and hold the music box, tap the **AirPlay** icon (a triangle with circles), and choose your speaker.
+3. Turn the volume up on both the iPad and the speaker.
+4. Still nothing? Close Sectional fully (swipe it away) and open it again.
+5. Disconnect any earbuds. The iPad sends sound to only one place at a time.
+
+## 7. Keep a backup
 
 Your songs and notes are kept only on your iPad. Every few weeks, go to **❔ Help** → **💾 Back up everything** and save the file to Files or iCloud Drive. Use **Restore a backup** to load it on a new iPad.
