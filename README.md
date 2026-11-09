@@ -5,6 +5,9 @@ A simple iPad/tablet app for choir sectional leaders:
 - **Songs**: keeps each song's score PDFs (choir + piano, choir only) and its tracks (Full mix, Soprano, Alto, Tenor, Bass…).
 - **Timestamps**: tap-along marking. Play a track and tap **MARK** at each rehearsal letter or phrase, then type the bar and letter. Each track keeps its own timestamps. You can copy them from another track and adjust, or paste a table from the "2027 Time Stamps" doc.
 - **Rehearsal**: tap 🎤 and say (or type) what you want to hear ("alto bar 32", "full mix letter B", "bars 10-24", "stop", "again") and it plays from the right spot. You also get notes, a record of the songs and bars covered, and a "Fix next time" list that carries over to the next sectional.
+- **Parts**: each leader picks the part(s) they lead (Soprano 1/2, Alto 1/2, Tops, Middles, Lowers) and sees only those tracks plus the full mix.
+- **Score mark-up**: pen, highlighter and typed notes on the score (finger or Apple Pencil). Times printed on a score can be read in as timestamps.
+- **Speed**: slow tracks down (90% to 50%) without changing the pitch.
 - **Finish & share**: one tap makes a summary you can send by email, Messages or WhatsApp.
 
 Everything stays **on each leader's own iPad**. There's no login, no server and no internet needed once it's installed. The **Help** tab has back-up and restore (to Files / iCloud Drive), which you can also use to copy a setup to another iPad.
@@ -30,7 +33,8 @@ After changing files, bump `VERSION` in `sw.js` (e.g. `sectional-v2`). Installed
 
 ```bash
 python3 -m http.server 8000   # then open http://localhost:8000
-npm test                      # unit tests for timestamps + the command parser
+npm test                      # unit tests (commands, spoken phrases, timestamps, parts, score times)
+# browser flows: see tests/browser/README.md
 ```
 
 | File | What it does |

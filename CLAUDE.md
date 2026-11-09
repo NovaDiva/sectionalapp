@@ -35,15 +35,19 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
   and shows a "Tap to update" banner, so leaders never need to reopen the link (that makes a new, empty copy).
 - iPad audio must start from a tap: keep `player.prepare()` before commands and `player.unlock()` on the mic tap.
 
-## Status
-v5 (9 Nov 2026): after Carol's first rehearsal: big Play controls + track buttons, score mark-up,
-voice on/off switch. Earlier: voice commands, Bluetooth sound-mode fix, update banner.
-v12 (10 Nov): slow-down speed control.
-v11 (10 Nov): ＋ Add song in a running rehearsal (tick/untick songs).
-v10 (10 Nov): read timestamps printed on the score (Timestamps screen + rehearsal hint button).
-v9 (10 Nov): new rehearsal has a real part choice (r.parts) that filters its tracks. v8: parts + my-parts filtering. v6/v7: Pencil drawing fixed (Carol confirmed) and fresh-file fetching.
-Earlier v6 note: on Carol's iPad the mark-up toolbar showed but strokes didn't draw. Fix: non-passive touchstart/move
-preventDefault on the drawing canvas (iPad scroll/Scribble was taking the stroke), canvas memory caps,
-on-screen error toasts. Not yet confirmed on her iPad. No WebKit browser here, so test on the iPad.
-Open question: does the Bluetooth speaker stay connected with the mic (audioSession fix)?
-Reminder for Carol: each Safari tab or Home Screen icon has its own separate storage.
+## Status (v12, 10 Nov 2026) - Carol is testing on her iPad; next session = her feedback
+Done and live: songs/scores/tracks, tap-along timestamps (+ paste table, + read times printed on the
+score), rehearsal Play panel (track buttons, start-from letters/bar, Speak/Stop/Again/Back, speed),
+voice + typed commands, notes / covered / fix-next-time, summary sharing, score mark-up (Pencil works,
+confirmed by Carol), parts + "my parts" filtering, part choice per rehearsal, add/remove songs mid-rehearsal,
+slow-down speed (Normal…50%), update banner, Bluetooth sound-mode attempt, backup/restore.
+
+Still to confirm on Carol's iPad:
+- Does the Bluetooth speaker stay connected after using the 🎤? (audioSession fix; otherwise voice can be switched off)
+- Reading times from her real "with timestamps" PDFs: how many found, letters correct?
+- How slowed-down tracks sound (pitch preserved), especially at 50%.
+
+Testing: `npm test` (unit) and tests/browser/README.md (Playwright flows + fixture generator).
+Version history: v5 big controls + mark-up; v6/v7 Pencil drawing + fresh-file fetching; v8 parts;
+v9 rehearsal part choice; v10 score times; v11 add song mid-rehearsal; v12 speed.
+Reminder for Carol: each Safari tab or Home Screen icon has its own separate storage; always use one icon.
