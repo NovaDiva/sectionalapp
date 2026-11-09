@@ -1,5 +1,5 @@
 // Keeps the app working offline. Bump VERSION whenever app files change.
-const VERSION = 'sectional-v6';
+const VERSION = 'sectional-v7';
 const FILES = [
   './',
   './index.html',
@@ -39,7 +39,9 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET' || url.origin !== location.origin) return;
   if (url.pathname.endsWith('/sw.js')) return; // version checks always go to the network
   e.respondWith(
-    fetch(req)
+    // 'no-cache' asks the server whether the file changed, so an update is never
+    // hidden behind the iPad's 10-minute file cache (GitHub Pages sends max-age=600).
+    fetch(req, { cache: 'no-cache' })
       .then((res) => {
         if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)); }
         return res;
