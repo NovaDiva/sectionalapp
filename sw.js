@@ -1,5 +1,5 @@
 // Keeps the app working offline. Bump VERSION whenever app files change.
-const VERSION = 'sectional-v5';
+const VERSION = 'sectional-v6';
 const FILES = [
   './',
   './index.html',

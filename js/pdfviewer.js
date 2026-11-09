@@ -46,7 +46,9 @@ export async function renderScore(container, item, { onPage } = {}) {
     const page = await pdf.getPage(p.n);
     const vp1 = page.getViewport({ scale: 1 });
     const scale = width / vp1.width;
-    const vp = page.getViewport({ scale: scale * dpr });
+    // Keep each page under ~10 megapixels: iPads stop drawing canvases past their memory limit.
+    const pxScale = Math.min(dpr, Math.sqrt(10e6 / (vp1.width * scale * vp1.height * scale)));
+    const vp = page.getViewport({ scale: scale * pxScale });
     const canvas = document.createElement('canvas');
     canvas.width = Math.floor(vp.width);
     canvas.height = Math.floor(vp.height);
@@ -57,7 +59,8 @@ export async function renderScore(container, item, { onPage } = {}) {
     try {
       await p.task.promise;
       p.holder.style.height = `${width * (vp1.height / vp1.width)}px`;
-      p.holder.querySelector('.pdf-canvas')?.remove();
+      const old = p.holder.querySelector('.pdf-canvas');
+      if (old) { old.width = 0; old.height = 0; old.remove(); } // free its memory straight away on iPad
       p.holder.prepend(canvas);
       onPage?.(p.n, p.holder);
     } catch { /* cancelled by a zoom change */ }
@@ -90,6 +93,10 @@ export async function renderScore(container, item, { onPage } = {}) {
     zoomIn: () => setZoom(zoom + 0.25),
     zoomOut: () => setZoom(zoom - 0.25),
     fit: () => setZoom(1),
-    destroy() { io.disconnect(); window.removeEventListener('resize', onResize); pdf.destroy(); },
+    destroy() {
+      io.disconnect(); window.removeEventListener('resize', onResize);
+      container.querySelectorAll('canvas').forEach((c) => { c.width = 0; c.height = 0; });
+      pdf.destroy();
+    },
   };
 }

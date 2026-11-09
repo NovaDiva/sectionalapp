@@ -53,12 +53,15 @@ export function createAnnotator(item, { onChange } = {}) {
     if (!pg) return;
     const { canvas, layer, holder } = pg;
     const W = holder.clientWidth, H = holder.clientHeight;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (!W || !H) return;
+    // iPads refuse very large canvases; keep the drawing layer under ~6 megapixels.
+    const dpr = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(6e6 / (W * H)));
     if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(H * dpr);
     }
     const ctx = canvas.getContext('2d');
+    if (!ctx) { console.warn('Drawing layer unavailable (canvas memory)'); return; }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
     // highlighter first so pen marks sit on top
@@ -137,6 +140,13 @@ export function createAnnotator(item, { onChange } = {}) {
   function wire(n, canvas, holder) {
     let current = null;
     let raf = 0;
+    // iPad Safari: unless touchstart/touchmove are cancelled, the iPad treats a
+    // finger or Apple Pencil stroke as scrolling (or Scribble) and the drawing
+    // never arrives. This is how web drawing apps keep the stroke.
+    const block = (e) => { if (tool !== 'move') e.preventDefault(); };
+    canvas.addEventListener('touchstart', block, { passive: false });
+    canvas.addEventListener('touchmove', block, { passive: false });
+    canvas.addEventListener('touchend', block, { passive: false });
     const pos = (e) => {
       const r = holder.getBoundingClientRect();
       return { x: e.clientX - r.left, y: e.clientY - r.top, W: r.width, H: r.height };

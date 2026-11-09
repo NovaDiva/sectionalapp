@@ -30,5 +30,8 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
 ## Status
 v5 (9 Nov 2026): after Carol's first rehearsal: big Play controls + track buttons, score mark-up,
 voice on/off switch. Earlier: voice commands, Bluetooth sound-mode fix, update banner.
-Open question: does the Bluetooth speaker stay connected with the mic in v5 (audioSession fix)?
+v6: on Carol's iPad the mark-up toolbar showed but strokes didn't draw. Fix: non-passive touchstart/move
+preventDefault on the drawing canvas (iPad scroll/Scribble was taking the stroke), canvas memory caps,
+on-screen error toasts. Not yet confirmed on her iPad. No WebKit browser here, so test on the iPad.
+Open question: does the Bluetooth speaker stay connected with the mic (audioSession fix)?
 Reminder for Carol: each Safari tab or Home Screen icon has its own separate storage.

@@ -1031,6 +1031,9 @@ async function route() {
 }
 
 window.addEventListener('hashchange', route);
+// Show unexpected problems briefly on screen, so leaders can tell Carol what they saw.
+window.addEventListener('error', (e) => { if (e.message) toast(`Problem: ${e.message}`); });
+window.addEventListener('unhandledrejection', (e) => { const m = e.reason?.message || String(e.reason || ''); if (m) toast(`Problem: ${m}`); });
 setupMini();
 route();
 

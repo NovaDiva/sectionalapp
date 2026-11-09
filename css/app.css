@@ -259,6 +259,7 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
 .ann-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .ann-layer { position: absolute; inset: 0; pointer-events: none; }
 .pdf-page.drawing .ann-canvas { pointer-events: auto; touch-action: none; cursor: crosshair; }
+.pdf-page.drawing, .pdf-page.drawing * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .pdf-page[data-tool=text] .ann-note, .pdf-page[data-tool=erase] .ann-note { pointer-events: auto; cursor: pointer; outline: 2px dashed rgba(91,42,134,.5); }
 .ann-note {
   position: absolute; transform: translate(0, -50%); font-weight: 700; line-height: 1.15; white-space: pre-wrap;
