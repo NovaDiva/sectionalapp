@@ -49,6 +49,7 @@ Tips:
 3. **Voice (optional):** tap **🎤 Speak** and say e.g. "letter B", "bar 32", "alto 2 bar 32", "first altos letter C" or "middles from the top". Saying a part switches to that track.
    - If a green box appears saying **"Now tap the 🎤 on the keyboard and speak"**, this iPad uses the keyboard's own microphone. Tap the 🎤 key next to the space bar and speak. When you stop talking, the app plays it by itself (no need to tap Go).
    - ❔ Help → 🎤 Voice button tells you which way your iPad works.
+   - After a spoken command there's a short silence (about 1 second) before the music starts. That gives a Bluetooth speaker time to settle back to your volume.
    You can also type the same words in the box and tap **Go**.
    Using a Bluetooth speaker? The iPad may move the sound off the speaker when the microphone is used. If so, turn the voice button off in **❔ Help** and use the buttons.
 4. Tap **📖 Score** to show the score full screen. **🎵 Player** shows or hides the track and letter buttons.

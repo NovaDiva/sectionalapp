@@ -11,6 +11,7 @@ node tests/browser/addsong.cjs $OUT            # adding a song to a running rehe
 node tests/browser/touch.cjs $FX/score.pdf $OUT/touch.png  # finger drawing on the score
 node tests/browser/voicefb.cjs $FX $OUT       # Speak falls back to keyboard dictation; never stuck
 node tests/browser/session.cjs                 # sound mode is not re-applied on every play (volume reset)
+node tests/browser/settle.cjs $FX              # voice command: muted warm-up, pause, then play from the right spot
 node tests/browser/update.cjs $OUT/update.png  # "Tap to update" banner
 ```
 

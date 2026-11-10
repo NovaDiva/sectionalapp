@@ -703,7 +703,8 @@ async function screenRehearsal(id, tab = 'play') {
     logEl.scrollTop = logEl.scrollHeight;
   }
 
-  function runCommand(text) {
+  // fromVoice: the microphone was just used, so start tracks the 'settled' way (see player.js).
+  function runCommand(text, { fromVoice = false } = {}) {
     text = text.trim();
     if (!text) return;
     // The highlighted song and its chosen track are used unless the command names others.
@@ -719,7 +720,7 @@ async function screenRehearsal(id, tab = 'play') {
           loading.then(() => addLog('app', 'Tracks ready.'));
           break;
         }
-        player.playFrom(track, a.start, a.end, song.title);
+        player.playFrom(track, a.start, a.end, song.title, { settle: fromVoice });
         const changed = r.currentSongId !== song.id || chosenTrack(song)?.id !== track.id;
         r.currentSongId = song.id;
         r.trackFor[song.id] = track.id;
@@ -729,9 +730,9 @@ async function screenRehearsal(id, tab = 'play') {
       }
       case 'pause': player.pause(); addLog('app', 'Stopped.'); break;
       case 'resume':
-        if (player.state.track) { player.resume(); addLog('app', 'Playing.'); } else addLog('app', 'Nothing to play yet. Try "alto bar 1".');
+        if (player.state.track) { player.resume({ settle: fromVoice }); addLog('app', 'Playing.'); } else addLog('app', 'Nothing to play yet. Try "alto bar 1".');
         break;
-      case 'again': addLog('app', player.again() ? 'Again from the same place.' : 'Nothing played yet.'); break;
+      case 'again': addLog('app', player.again({ settle: fromVoice }) ? 'Again from the same place.' : 'Nothing played yet.'); break;
       case 'seek': player.seekBy(a.by); addLog('app', `${a.by < 0 ? 'Back' : 'Forward'} ${Math.abs(a.by)} seconds.`); break;
       case 'note': addNote(a.text); addLog('app', 'Note saved.'); break;
       case 'todo': addTodo(a.text); addLog('app', 'Added to "Fix next time".'); break;
@@ -845,10 +846,10 @@ async function screenRehearsal(id, tab = 'play') {
       input.value = '';
       try {
         const heard = await listen({ onInterim: (t) => { input.value = t; } });
-        if (heard) { input.value = heard; go(); }
+        if (heard) { input.value = heard; go({ voice: true }); }
         else {
           toast('I didn\'t hear anything. Tap Speak and try again.');
-          if (wasPlaying) player.resume();
+          if (wasPlaying) player.resume({ settle: true });
         }
       } catch (e) {
         const m = e.message || '';
@@ -882,20 +883,21 @@ async function screenRehearsal(id, tab = 'play') {
       h('div', { class: 'voice-tip-big' }, 'Now tap the 🎤 on the keyboard and speak'),
       h('div', {}, 'The microphone key is next to the space bar. Say e.g. "letter B" or "alto bar 32". When you stop talking, the app plays it.'));
     const showVoiceTip = (on) => { tip.hidden = !on; tip.parentElement?.classList.toggle('dictating', on); };
-    const go = () => {
+    const go = ({ voice = false } = {}) => {
       clearTimeout(dictTimer);
+      const fromVoice = voice || dictating;
       dictating = false;
       showVoiceTip(false);
       const v = input.value;
       input.value = '';
-      runCommand(v);
+      runCommand(v, { fromVoice });
       if (compact) { toast(r.log[r.log.length - 1]?.text || ''); }
       input.blur();
     };
     input.addEventListener('input', () => {
       if (!dictating) return;
       clearTimeout(dictTimer);
-      if (input.value.trim()) dictTimer = setTimeout(go, 1600); // words stopped changing: run it
+      if (input.value.trim()) dictTimer = setTimeout(() => go({ voice: true }), 1600); // words stopped changing: run it
     });
     input.addEventListener('blur', () => { setTimeout(() => { if (!input.value.trim()) { dictating = false; showVoiceTip(false); } }, 300); });
     const form = h('form', { class: 'row cmd-row', onsubmit: (e) => { e.preventDefault(); go(); } },

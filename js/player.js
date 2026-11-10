@@ -94,9 +94,42 @@ export function load(item, songTitle = '') {
   return true;
 }
 
-export function playFrom(item, start = 0, end = null, songTitle = '') {
+// ---- "settled" start, used after a voice command.
+// Using the microphone puts the iPad in phone-call sound mode; when music starts again a
+// Bluetooth speaker can come back at full volume. Carol found that pausing and playing
+// again brings back the right volume, so: play muted for a moment (the iPad switches back
+// to music mode), pause briefly, then jump to the start point, unmute and play.
+export const SETTLE = { mutedMs: 500, pauseMs: 500 };
+let settleTimers = [];
+let settling = false;
+function cancelSettle() {
+  settleTimers.forEach(clearTimeout);
+  settleTimers = [];
+  if (settling) { settling = false; audio.muted = false; }
+}
+function startSettled(start) {
+  settling = true;
+  audio.muted = true;
+  audio.play().catch(() => {});
+  settleTimers.push(setTimeout(() => {
+    audio.pause();
+    settleTimers.push(setTimeout(() => {
+      settling = false;
+      settleTimers = [];
+      try { audio.currentTime = start; } catch { pendingSeek = start; }
+      audio.muted = false;
+      applySpeed();
+      audio.play().catch(() => {});
+      emit();
+    }, SETTLE.pauseMs));
+  }, SETTLE.mutedMs));
+}
+export function isSettling() { return settling; }
+
+export function playFrom(item, start = 0, end = null, songTitle = '', { settle = false } = {}) {
   const url = urls.get(item.blobId);
   if (!url) return false;
+  cancelSettle();
   stopAt = end;
   state.lastStart = start;
   state.lastEnd = end;
@@ -112,7 +145,8 @@ export function playFrom(item, start = 0, end = null, songTitle = '') {
   }
   setSoundMode('playback');
   applySpeed();
-  audio.play().catch(() => {});
+  if (settle) startSettled(start);
+  else audio.play().catch(() => {});
   emit();
   return true;
 }
@@ -135,12 +169,19 @@ export function unlock() {
 }
 audio.addEventListener('playing', () => { unlocked = true; });
 
-export function again() {
+export function again(opts = {}) {
   if (!state.track) return false;
-  return playFrom(state.track, state.lastStart, state.lastEnd, state.songTitle);
+  return playFrom(state.track, state.lastStart, state.lastEnd, state.songTitle, opts);
 }
-export function pause() { audio.pause(); }
-export function resume() { if (state.track) { stopAt = null; setSoundMode('playback'); audio.play().catch(() => {}); } }
+export function pause() { cancelSettle(); audio.pause(); }
+export function resume({ settle = false } = {}) {
+  if (!state.track) return;
+  cancelSettle();
+  stopAt = null;
+  setSoundMode('playback');
+  if (settle) startSettled(audio.currentTime || 0);
+  else audio.play().catch(() => {});
+}
 export function toggle() { audio.paused ? resume() : pause(); }
 export function seekBy(sec) {
   if (!state.track) return;
@@ -148,7 +189,7 @@ export function seekBy(sec) {
   emit();
 }
 export function seekTo(sec) { if (state.track) { audio.currentTime = Math.max(0, sec); emit(); } }
-export function stop() { audio.pause(); stopAt = null; if (state.track) audio.currentTime = state.lastStart || 0; emit(); }
+export function stop() { cancelSettle(); audio.pause(); stopAt = null; if (state.track) audio.currentTime = state.lastStart || 0; emit(); }
 
 export function describe() {
   if (!state.track) return '';
@@ -164,3 +205,6 @@ export function forget(item) {
   URL.revokeObjectURL(url);
   urls.delete(item.blobId);
 }
+
+// For tests: what the audio element is doing.
+export function debugState() { return { muted: audio.muted, paused: audio.paused, time: audio.currentTime }; }
