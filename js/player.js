@@ -10,7 +10,12 @@ import { formatTime } from './timestamps.js';
 // sound to the chosen Bluetooth/AirPlay speaker. While the microphone is in use
 // we switch to 'play-and-record', then straight back (see voice.js).
 export function setSoundMode(type) {
-  try { if (navigator.audioSession) navigator.audioSession.type = type; } catch { /* not supported */ }
+  // Only when it actually changes: re-applying the same mode makes the iPad reset the
+  // audio connection, and some Bluetooth speakers jump back to full volume when that happens.
+  try {
+    const s = navigator.audioSession;
+    if (s && s.type !== type) s.type = type;
+  } catch { /* not supported */ }
 }
 setSoundMode('playback');
 

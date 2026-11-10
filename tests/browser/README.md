@@ -10,6 +10,7 @@ node tests/browser/scoretimes-e2e.cjs $FX $OUT # reading times printed on a scor
 node tests/browser/addsong.cjs $OUT            # adding a song to a running rehearsal
 node tests/browser/touch.cjs $FX/score.pdf $OUT/touch.png  # finger drawing on the score
 node tests/browser/voicefb.cjs $FX $OUT       # Speak falls back to keyboard dictation; never stuck
+node tests/browser/session.cjs                 # sound mode is not re-applied on every play (volume reset)
 node tests/browser/update.cjs $OUT/update.png  # "Tap to update" banner
 ```
 
