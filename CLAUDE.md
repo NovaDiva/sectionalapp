@@ -11,7 +11,8 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
   Backup/restore in the Help tab is how a leader moves THEIR OWN setup to a new iPad.
 - Handover (Carol, 11 Nov 2026): every leader starts with an EMPTY app and uploads/sets up their own songs,
   scores and tracks; each choir runs different songs. No shared starter pack / preloaded content.
-  Android tablets (Chrome) should work but are untested; Help's install steps are iPad-only so far.
+  Android tablets (Chrome) should work but are untested; Help has iPad + Android install steps (v27).
+  Printable leader handout (Claude Doc): https://claude.ai/artifact/NATF5UWzVxiJEBW7a8iNTg
 - Timestamps are made in the app by tap-along (MARK button), with no AI. Each track has its own
   timestamps (part tracks don't share timing). Pasting a table from her "2027 Time Stamps" doc is
   also supported (the format comes from her choir-track-timestamps skill), and so is reading the times
@@ -48,7 +49,7 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
   and shows a "Tap to update" banner, so leaders never need to reopen the link (that makes a new, empty copy).
 - iPad audio must start from a tap: keep `player.prepare()` before commands and `player.unlock()` on the mic tap.
 
-## Status (v26, 11 Nov 2026) - Carol is testing on her iPad; next session = her feedback
+## Status (v27, 11 Nov 2026) - Carol is testing on her iPad; next session = her feedback
 Done and live: songs/scores/tracks, tap-along timestamps (+ paste table, + read times printed on the
 score), rehearsal Play panel (track buttons, start-from letters/bar, Speak/Stop/Again/Back, speed),
 voice + typed commands, notes / covered / fix-next-time, summary sharing, score mark-up (Pencil works,
