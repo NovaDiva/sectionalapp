@@ -20,6 +20,8 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { margin: 0; height: 100%; }
+/* black behind the iPad status bar (time/battery): the header runs up under it */
+html { background: #000; }
 body {
   font: 18px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: var(--text); background: var(--bg);
@@ -327,3 +329,6 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
 .big-ctl.note-mic { width: 100%; flex-direction: row; gap: 12px; min-height: 72px; font-size: 20px; }
 textarea.speaking { border: 2px solid var(--orange); }
 textarea.speaking::placeholder { color: var(--orange); font-weight: 700; opacity: 1; }
+
+/* header fills the status-bar strip too, so the top of the screen is solid black */
+.topbar { position: relative; z-index: 5; }

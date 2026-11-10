@@ -43,7 +43,7 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
   and shows a "Tap to update" banner, so leaders never need to reopen the link (that makes a new, empty copy).
 - iPad audio must start from a tap: keep `player.prepare()` before commands and `player.unlock()` on the mic tap.
 
-## Status (v23, 11 Nov 2026) - Carol is testing on her iPad; next session = her feedback
+## Status (v24, 11 Nov 2026) - Carol is testing on her iPad; next session = her feedback
 Done and live: songs/scores/tracks, tap-along timestamps (+ paste table, + read times printed on the
 score), rehearsal Play panel (track buttons, start-from letters/bar, Speak/Stop/Again/Back, speed),
 voice + typed commands, notes / covered / fix-next-time, summary sharing, score mark-up (Pencil works,
@@ -71,7 +71,7 @@ Bluetooth clicker or foot pedal for hands-free control without the microphone.
 Keyboard-voice fallback is only sticky if the iPad refuses/can't listen; a slow start (6 s) falls back once.
 Still to confirm: is the volume right after voice commands (v17/v20 warm-up)? Mic/buttons all OK? If the gap is too short/long, tune SETTLE. Does Speak now respond straight away (direct or keyboard mode)? What does Help say for her iPad?
 Testing: `npm test` (unit) and tests/browser/README.md (Playwright flows + fixture generator).
-Version history: v23 clearer Speak-a-note prompt (keyboard 🎙 key is bottom-left on Carol's iPad, next to .?123); v22 Speak a note + Covered/Fix parked; v21 Hummingsong branding; v20 voice restored to v17; v5 big controls + mark-up; v6/v7 Pencil drawing + fresh-file fetching; v8 parts;
+Version history: v24 solid black status-bar strip (status-bar-style black-translucent + html bg black; header already pads safe-area-inset-top); v23 clearer Speak-a-note prompt (keyboard 🎙 key is bottom-left on Carol's iPad, next to .?123); v22 Speak a note + Covered/Fix parked; v21 Hummingsong branding; v20 voice restored to v17; v5 big controls + mark-up; v6/v7 Pencil drawing + fresh-file fetching; v8 parts;
 v9 rehearsal part choice; v10 score times; v11 add song mid-rehearsal; v12 speed; v14: setSoundMode only assigns navigator.audioSession.type when it differs (re-applying it
 reset Carol's Bluetooth speaker to full volume on every play); v13 Speak fallback to keyboard dictation
 (Carol: mic only responded after tapping the type box first) + listen() timeouts.
