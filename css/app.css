@@ -310,3 +310,6 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
 .voice-tip { background: #e8f5ec; border: 2px solid #1e7b45; border-radius: 14px; padding: 12px 14px; color: #14532d; }
 .voice-tip-big { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
 .play-panel.compact.dictating .cmd-row { display: flex; }
+
+/* invisible target used to take focus away from the type box (closes the iPad keyboard) */
+.focus-sink { position: fixed; left: -9999px; top: 0; width: 1px; height: 1px; opacity: 0; }

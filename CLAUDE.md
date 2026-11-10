@@ -38,7 +38,7 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
   and shows a "Tap to update" banner, so leaders never need to reopen the link (that makes a new, empty copy).
 - iPad audio must start from a tap: keep `player.prepare()` before commands and `player.unlock()` on the mic tap.
 
-## Status (v18, 10 Nov 2026) - Carol is testing on her iPad; next session = her feedback
+## Status (v19, 10 Nov 2026) - Carol is testing on her iPad; next session = her feedback
 Done and live: songs/scores/tracks, tap-along timestamps (+ paste table, + read times printed on the
 score), rehearsal Play panel (track buttons, start-from letters/bar, Speak/Stop/Again/Back, speed),
 voice + typed commands, notes / covered / fix-next-time, summary sharing, score mark-up (Pencil works,
@@ -58,7 +58,11 @@ Again/buttons during the warm-up go straight to the real track (cancelSettle put
 v18: Carol saw the orange mic indicator stay on during playback after voice commands. Now listen() aborts and
 detaches the recogniser, then releaseMic() sets audioSession 'auto' (250 ms) -> 'playback' (400 ms) so iOS
 re-applies music mode after capture has closed (only after listening; plain plays never touch the mode).
-Leaving the rehearsal screen stops listening. Still to confirm: does the orange dot now go off?
+Leaving the rehearsal screen stops listening. v18 did NOT clear the dot for Carol.
+v19: likely she is in KEYBOARD-dictation mode (mic only worked after tapping the type box; iPad dictation keeps
+listening until the keyboard closes or ~30 s silence). go() now calls endKeyboard() BEFORE playing: input
+readOnly + blur + focus a hidden #focus-sink, readOnly cleared after 800 ms. Still to confirm: dot off now?
+Ask Carol what Help -> Voice button says (direct vs keyboard) - she hasn't said yet.
 Keyboard-voice fallback is only sticky if the iPad refuses/can't listen; a slow start (6 s) falls back once.
 Still to confirm: is the volume right after voice commands now (v17)? Mic/buttons all OK? If the gap is too short/long, tune SETTLE. Does Speak now respond straight away (direct or keyboard mode)? What does Help say for her iPad?
 Testing: `npm test` (unit) and tests/browser/README.md (Playwright flows + fixture generator).
