@@ -89,11 +89,17 @@ const FX = process.argv[2], OUT = process.argv[3];
   await page.click('.speed-btn:has-text("Normal")');
   console.log('buttons:', (await page.locator('.bubble').allTextContents()).slice(-5).join(' | '));
   await page.screenshot({ path: OUT + '/04b-play.png' });
-  await page.click('.seg-btn:has-text("Covered")');
-  await page.click('.chip:has-text("B")');
-  await page.click('.seg-btn:has-text("Fix next time")');
+  // Covered / Fix next time are parked (FEATURES in app.js): their tabs must not show
+  console.log('tabs:', (await page.locator('.seg-btn').allTextContents()).join(' | '));
+  // Notes: Speak a note opens the note box with the dictation tip; then Add note
+  await page.click('.seg-btn:has-text("Notes")');
+  await page.click('.note-mic');
+  console.log('note tip shown:', await page.isVisible('.voice-tip'), '| note box focused:', await page.evaluate(() => document.activeElement?.tagName === 'TEXTAREA'));
+  await page.keyboard.type('Breathe after bar 24');
+  await page.click('button:has-text("+ Add note")');
   await page.waitForTimeout(200);
-  await page.screenshot({ path: OUT + '/05-fix.png' });
+  console.log('notes:', (await page.locator('.list-item.note').allTextContents()).map((t) => t.replace(/✕$/, '')).join(' | '));
+  await page.screenshot({ path: OUT + '/05-notes.png' });
   // score viewer
   await page.click('.seg-btn:has-text("Play")');
   await page.click('.song-bar >> text=📖');

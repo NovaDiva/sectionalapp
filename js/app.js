@@ -7,6 +7,12 @@ import {
   formatTime, sortMarks, markTitle, lettersIn, parseTimestampTable, parseBarLetter, findLetter, timeForBar,
 } from './timestamps.js';
 
+// ---------------------------------------------------------------- parked features
+// "Covered" and "Fix next time" are switched off for now (Carol, 10 Nov 2026) to keep the
+// rehearsal screen simple while more leaders test. All their code and saved data stay in
+// place: set these to true to bring them back (tabs, home card, summary sections, "fix:").
+const FEATURES = { covered: false, fixNextTime: false };
+
 // ---------------------------------------------------------------- helpers
 
 function h(tag, attrs, ...children) {
@@ -595,7 +601,7 @@ async function screenRehearsalHome() {
     h('a', { class: 'hero', href: songs.length ? '#/rehearsal-new' : '#/songs', onclick: () => { if (!songs.length) toast('Add a song first'); } },
       h('div', { class: 'hero-icon' }, '＋'),
       h('div', {}, h('div', { class: 'hero-title' }, 'Start a new rehearsal'), h('div', {}, 'Pick the songs, then play tracks and take notes'))),
-    todos.length ? h('div', { class: 'card' },
+    FEATURES.fixNextTime && todos.length ? h('div', { class: 'card' },
       h('h2', {}, `🔧 To work on (${todos.length})`),
       h('ul', { class: 'plain' }, todos.slice(0, 6).map((t) => h('li', {}, todoText(t, songs)))),
       todos.length > 6 ? h('p', { class: 'muted' }, `…and ${todos.length - 6} more`) : null) : null,
@@ -671,9 +677,9 @@ const HELP = [
   '• stop · again · back 10 · forward 5',
   '• slower · half speed · speed 80 · normal speed',
   '• note: altos flat at C',
-  '• fix: tuning in bar 40 (adds to "Fix next time")',
+  FEATURES.fixNextTime ? '• fix: tuning in bar 40 (adds to "Fix next time")' : null,
   'Letters and bars need the track\'s timestamps (🎼 Songs → ⏱ Timestamps).',
-].join('\n');
+].filter((l) => l != null).join('\n');
 
 async function screenRehearsal(id, tab = 'play') {
   const r = await db.get('rehearsals', id);
@@ -735,7 +741,10 @@ async function screenRehearsal(id, tab = 'play') {
       case 'again': addLog('app', player.again({ settle: fromVoice }) ? 'Again from the same place.' : 'Nothing played yet.'); break;
       case 'seek': player.seekBy(a.by); addLog('app', `${a.by < 0 ? 'Back' : 'Forward'} ${Math.abs(a.by)} seconds.`); break;
       case 'note': addNote(a.text); addLog('app', 'Note saved.'); break;
-      case 'todo': addTodo(a.text); addLog('app', 'Added to "Fix next time".'); break;
+      case 'todo':
+        if (FEATURES.fixNextTime) { addTodo(a.text); addLog('app', 'Added to "Fix next time".'); }
+        else { addNote(`To fix: ${a.text}`); addLog('app', 'Note saved.'); }
+        break;
       case 'speed': {
         const rate = player.setSpeed(a.rate ?? player.getSpeed() + a.by);
         addLog('app', rate === 1 ? 'Normal speed.' : `Playing at ${player.speedLabel(rate)} speed.`);
@@ -975,7 +984,10 @@ async function screenRehearsal(id, tab = 'play') {
 
   // ---- tabs
   const tabBody = h('div', { class: 'tab-body' });
-  const tabs = [['play', '▶ Play'], ['notes', '📝 Notes'], ['covered', '✓ Covered'], ['todo', '🔧 Fix next time']];
+  const tabs = [['play', '▶ Play'], ['notes', '📝 Notes'],
+    FEATURES.covered ? ['covered', '✓ Covered'] : null,
+    FEATURES.fixNextTime ? ['todo', '🔧 Fix next time'] : null].filter(Boolean);
+  if (!tabs.some(([k]) => k === tab)) tab = 'play';
   const tabBar = h('div', { class: 'seg' }, tabs.map(([k, label]) =>
     h('button', { class: `seg-btn ${k === tab ? 'on' : ''}`, 'data-tab': k, onclick: () => { tab = k; renderTab(); } }, label)));
 
@@ -986,12 +998,30 @@ async function screenRehearsal(id, tab = 'play') {
       fill(tabBody, commandBox(), logEl);
       logEl.scrollTop = logEl.scrollHeight;
     } else if (tab === 'notes') {
-      const ta = h('textarea', { rows: 3, placeholder: 'Type a note, e.g. "Altos rushing at letter C. Breathe after bar 24."' });
+      const ta = h('textarea', { rows: 3, placeholder: 'Type a note, or tap 🎤 Speak a note. E.g. "Altos rushing at letter C. Breathe after bar 24."' });
+      // Speaking a note uses the iPad keyboard's own dictation (good for longer notes, and the
+      // words can be checked before saving). No extra microphone code, by design.
+      const noteTip = h('div', { class: 'voice-tip', hidden: true },
+        h('div', { class: 'voice-tip-big' }, 'Now tap the 🎤 on the keyboard and speak your note'),
+        h('div', {}, 'The microphone key is next to the space bar. When you have finished, check the words and tap + Add note.'));
+      const speakNote = () => {
+        if (player.state.playing) player.pause(); // so dictation hears you, not the music
+        noteTip.hidden = false;
+        ta.focus();
+      };
+      const addIt = () => {
+        if (!ta.value.trim()) { ta.focus(); return; }
+        addNote(ta.value.trim()); ta.value = ''; noteTip.hidden = true; renderTab(); toast('Note saved');
+      };
+      ta.addEventListener('blur', () => { setTimeout(() => { if (!ta.value.trim()) noteTip.hidden = true; }, 300); });
       const list = [...r.notes].sort((a, b) => b.at - a.at);
-      fill(tabBody, 
-        h('div', { class: 'card' }, ta,
+      fill(tabBody,
+        h('div', { class: 'card' },
+          h('button', { class: 'big-ctl mic note-mic', type: 'button', onclick: speakNote }, h('span', { class: 'ctl-icon' }, '🎤'), h('span', {}, 'Speak a note')),
+          noteTip,
+          ta,
           h('div', { class: 'row space' }, h('span', { class: 'muted' }, `For: ${curSong()?.title || 'general'}`),
-            h('button', { class: 'btn primary', onclick: () => { if (ta.value.trim()) { addNote(ta.value.trim()); ta.value = ''; renderTab(); } } }, '+ Add note'))),
+            h('button', { class: 'btn primary big', onclick: addIt }, '+ Add note'))),
         list.length ? h('div', { class: 'list' }, list.map((n) => h('div', { class: 'list-item note' },
           h('div', { class: 'grow' },
             h('div', { class: 'muted small' }, `${timeOfDay(n.at)}${n.songId ? ' · ' + (songs.find((s) => s.id === n.songId)?.title || '') : ''}`),
@@ -1080,7 +1110,7 @@ async function buildSummary(r) {
     if (c.text) bits.push(c.text);
     return bits.length ? `• ${s.title}: ${bits.join('; ')}` : null;
   }).filter(Boolean);
-  if (cov.length) lines.push('What we covered:', ...cov, '');
+  if (FEATURES.covered && cov.length) lines.push('What we covered:', ...cov, '');
 
   if (r.notes?.length) {
     lines.push('Notes:');
@@ -1090,9 +1120,9 @@ async function buildSummary(r) {
     }
     lines.push('');
   }
-  const fixed = todos.filter((t) => t.done && t.doneIn === r.id);
+  const fixed = FEATURES.fixNextTime ? todos.filter((t) => t.done && t.doneIn === r.id) : [];
   if (fixed.length) lines.push('Fixed today:', ...fixed.map((t) => `• ${todoText(t, allSongs)}`), '');
-  const open = todos.filter((t) => !t.done && (!t.songId || r.songIds.includes(t.songId)));
+  const open = FEATURES.fixNextTime ? todos.filter((t) => !t.done && (!t.songId || r.songIds.includes(t.songId))) : [];
   if (open.length) lines.push('To work on next time:', ...open.map((t) => `• ${todoText(t, allSongs)}`), '');
   return lines.join('\n').trim();
 }

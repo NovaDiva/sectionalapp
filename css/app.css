@@ -322,3 +322,6 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
 .topbar .back { background: rgba(255,255,255,.14); }
 .overlay-bar { background: var(--header); }
 @media (max-width: 600px) { .brand-logo { height: 34px; } }
+
+/* Notes: speak a note */
+.big-ctl.note-mic { width: 100%; flex-direction: row; gap: 12px; min-height: 72px; font-size: 20px; }

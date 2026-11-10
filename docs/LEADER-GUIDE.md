@@ -54,9 +54,7 @@ Tips:
    Using a Bluetooth speaker? The iPad may move the sound off the speaker when the microphone is used. If so, turn the voice button off in **❔ Help** and use the buttons.
 4. Tap **📖 Score** to show the score full screen. **🎵 Player** shows or hides the track and letter buttons.
    - **✏️ Mark up** lets you draw on the score: **✏️ Pen**, **🖍 Highlight**, **🔤 Text** (tap where the note goes), **🧽 Eraser**, **↶ Undo**. Tap **✋ Scroll** to move the page again. Your marks are saved on this iPad.
-5. **📝 Notes**: type anything worth remembering.
-6. **✓ Covered**: tap the letters you worked on and add any bars.
-7. **🔧 Fix next time**: add things to work on. Tick them when they're sorted. Anything left unticked shows up again next time.
+5. **📝 Notes**: type a note, or tap **🎤 Speak a note**, then tap the 🎤 on the keyboard and speak. Check the words, then tap **+ Add note**. (Any playing track pauses so the iPad hears you.)
 
 ## 6. Finish and share
 
