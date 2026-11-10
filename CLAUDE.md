@@ -8,7 +8,10 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
 - Must stay simple for leaders with basic iPad skills: big buttons, plain words, few steps.
 - Web app added to the home screen (PWA), not an App Store app. Plain HTML/CSS/JS, no build step.
 - Each leader manages their own library on their own iPad (IndexedDB). No login, no server.
-  Backup/restore in the Help tab is how setups are copied between iPads.
+  Backup/restore in the Help tab is how a leader moves THEIR OWN setup to a new iPad.
+- Handover (Carol, 11 Nov 2026): every leader starts with an EMPTY app and uploads/sets up their own songs,
+  scores and tracks; each choir runs different songs. No shared starter pack / preloaded content.
+  Android tablets (Chrome) should work but are untested; Help's install steps are iPad-only so far.
 - Timestamps are made in the app by tap-along (MARK button), with no AI. Each track has its own
   timestamps (part tracks don't share timing). Pasting a table from her "2027 Time Stamps" doc is
   also supported (the format comes from her choir-track-timestamps skill), and so is reading the times

@@ -1,5 +1,7 @@
 # Sectional – quick guide for leaders
 
+Your Sectional app starts empty: you add your own choir's songs, scores and tracks.
+
 ## 1. Install it (once)
 
 1. Open the link you were sent in **Safari** on your iPad.
