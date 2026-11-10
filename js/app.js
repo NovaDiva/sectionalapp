@@ -822,6 +822,7 @@ async function screenRehearsal(id, tab = 'play') {
   }
 
   const voiceOn = () => localStorage.getItem('voiceOff') !== '1';
+  onLeave(() => stopListening()); // never leave the microphone on when leaving the rehearsal
   let useKeyboardVoice = false; // switches on if direct listening doesn't work on this iPad
 
   function controlButtons(input, go, compact, { showVoiceTip, setDictating }) {

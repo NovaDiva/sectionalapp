@@ -2,7 +2,7 @@
 // iPad, Chrome on Android/desktop). Where it isn't available, the app falls
 // back to the microphone key on the iPad keyboard (dictation).
 
-import { setSoundMode } from './player.js';
+import { setSoundMode, releaseMic } from './player.js';
 
 const Recognition = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
 
@@ -46,8 +46,11 @@ export function listen({ onInterim } = {}) {
       timers.forEach(clearTimeout);
       if (active === rec) active = null;
       finishActive = null;
-      setSoundMode('playback');
+      // Close the microphone completely and let go of the recogniser, then hand the sound back
+      // to music mode once the iPad has finished closing it (releaseMic waits a moment).
+      rec.onresult = rec.onerror = rec.onend = rec.onstart = rec.onaudiostart = null;
       try { rec.abort(); } catch { /* already ended */ }
+      releaseMic();
       if (err) reject(err); else resolve((finalText || latest).trim());
     };
     finishActive = () => finish();

@@ -19,6 +19,21 @@ export function setSoundMode(type) {
 }
 setSoundMode('playback');
 
+// After the microphone has been used: wait until the iPad has really closed it, then switch
+// firmly back to music mode (via 'auto', so the iPad applies it even if it thinks it is
+// already in music mode). This lets the iPad turn the microphone off (the orange dot).
+// Only used after listening, when the speaker is changing mode anyway.
+let releaseTimers = [];
+export function releaseMic() {
+  const s = typeof navigator !== 'undefined' ? navigator.audioSession : null;
+  if (!s) return;
+  releaseTimers.forEach(clearTimeout);
+  releaseTimers = [
+    setTimeout(() => { try { s.type = 'auto'; } catch { /* not supported */ } }, 250),
+    setTimeout(() => { try { s.type = 'playback'; } catch { /* not supported */ } }, 400),
+  ];
+}
+
 const audio = new Audio();
 
 // ---- playback speed (slow down only; pitch stays the same)
