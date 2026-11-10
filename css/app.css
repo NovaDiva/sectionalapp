@@ -38,7 +38,8 @@ a { color: var(--brand); }
 
 .topbar {
   display: flex; align-items: center; gap: 12px;
-  padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px;
+  /* extra room at the top so the logo and title sit below the iPad's faded status-bar band */
+  padding: calc(34px + env(safe-area-inset-top, 0px)) 16px 12px;
   background: var(--brand); color: #fff; min-height: 60px;
 }
 .topbar .back { background: rgba(255,255,255,.18); color: #fff; border: 0; }
@@ -186,7 +187,7 @@ body.viewing .overlay { bottom: 0; }
 body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
 .overlay-bar {
   display: flex; align-items: center; gap: 8px; background: var(--brand-dark); color: #fff;
-  padding: calc(8px + env(safe-area-inset-top, 0px)) 10px 8px;
+  padding: calc(30px + env(safe-area-inset-top, 0px)) 10px 8px;
 }
 .overlay-title { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .overlay .cmd-row { background: #e3ecee; padding: 6px 10px; position: static; }
