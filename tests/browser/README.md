@@ -9,6 +9,7 @@ node tests/browser/parts.cjs $FX $OUT          # my parts, part filtering, new-r
 node tests/browser/scoretimes-e2e.cjs $FX $OUT # reading times printed on a score
 node tests/browser/addsong.cjs $OUT            # adding a song to a running rehearsal
 node tests/browser/touch.cjs $FX/score.pdf $OUT/touch.png  # finger drawing on the score
+node tests/browser/voicefb.cjs $FX $OUT       # Speak falls back to keyboard dictation; never stuck
 node tests/browser/update.cjs $OUT/update.png  # "Tap to update" banner
 ```
 

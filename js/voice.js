@@ -15,6 +15,15 @@ let active = null;
  * @param {{onInterim?: (text: string) => void}} opts
  * @returns {Promise<string>} what was heard ('' if nothing)
  */
+let finishActive = null; // ends the current listen() (used by stopListening)
+
+/**
+ * Listen for one command.
+ * Rejects with Error('no-start') if the iPad never starts listening (then the
+ * app falls back to keyboard dictation), or with the browser's error name.
+ * @param {{onInterim?: (text: string) => void}} opts
+ * @returns {Promise<string>} what was heard ('' if nothing)
+ */
 export function listen({ onInterim } = {}) {
   if (!Recognition) return Promise.reject(new Error('not-supported'));
   stopListening();
@@ -27,7 +36,25 @@ export function listen({ onInterim } = {}) {
     rec.maxAlternatives = 1;
     let finalText = '';
     let latest = '';
+    let started = false;
+    let done = false;
+    const timers = [];
+    // Settle exactly once, and always reset, so the button can never get stuck.
+    const finish = (err) => {
+      if (done) return;
+      done = true;
+      timers.forEach(clearTimeout);
+      if (active === rec) active = null;
+      finishActive = null;
+      setSoundMode('playback');
+      try { rec.abort(); } catch { /* already ended */ }
+      if (err) reject(err); else resolve((finalText || latest).trim());
+    };
+    finishActive = () => finish();
+    rec.onstart = () => { started = true; };
+    rec.onaudiostart = () => { started = true; };
     rec.onresult = (e) => {
+      started = true;
       let interim = '';
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const t = e.results[i][0].transcript;
@@ -37,19 +64,22 @@ export function listen({ onInterim } = {}) {
       onInterim?.(latest);
     };
     rec.onerror = (e) => {
-      active = null;
-      setSoundMode('playback');
-      if (e.error === 'no-speech' || e.error === 'aborted') resolve('');
-      else reject(new Error(e.error || 'voice-error'));
+      if (e.error === 'no-speech' || e.error === 'aborted') finish();
+      else finish(new Error(e.error || 'voice-error'));
     };
-    rec.onend = () => { active = null; setSoundMode('playback'); resolve((finalText || latest).trim()); };
+    rec.onend = () => finish(started || finalText || latest ? null : new Error('no-start'));
+    // Never started within 4 s: listening isn't working on this device.
+    timers.push(setTimeout(() => { if (!started) finish(new Error('no-start')); }, 4000));
+    // Never listen for more than 12 s.
+    timers.push(setTimeout(() => finish(), 12000));
     setSoundMode('play-and-record');
-    try { rec.start(); } catch (err) { active = null; setSoundMode('playback'); reject(err); }
+    try { rec.start(); } catch (err) { finish(err); }
   });
 }
 
 export function stopListening() {
-  if (active) { try { active.stop(); } catch { /* already stopped */ } }
+  if (finishActive) finishActive();
+  else if (active) { try { active.stop(); } catch { /* already stopped */ } active = null; }
 }
 
 export function isListening() { return !!active; }

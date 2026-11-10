@@ -305,3 +305,8 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
 .speed-row.compact { flex-wrap: nowrap; overflow-x: auto; }
 .speed-row.compact .speed-btn { min-height: 48px; min-width: 64px; font-size: 16px; flex: none; }
 .speed-label { font-size: 24px; }
+
+/* voice through the keyboard's dictation key */
+.voice-tip { background: #e8f5ec; border: 2px solid #1e7b45; border-radius: 14px; padding: 12px 14px; color: #14532d; }
+.voice-tip-big { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.play-panel.compact.dictating .cmd-row { display: flex; }

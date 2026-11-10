@@ -17,6 +17,9 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
 - Rehearsal Play tab: big track buttons (track names, choice stays per song), Start-from buttons
   (top / letters / bar box), big Speak/Stop/Again/Back 5s, a type box, then the chat log.
   The 🎤 voice button can be switched off in Help (Bluetooth speakers drop when the mic is used).
+  If direct speech recognition is missing, refused or never starts (4 s), Speak switches to "keyboard voice":
+  focus the type box + green tip to use the keyboard's dictation key; the command auto-runs 1.6 s after
+  the text stops changing. listen() always settles (timeouts) so the button can't get stuck.
 - Score viewer: ✏️ Mark up (pen, highlighter, typed notes, eraser, undo), saved in item.annotations
   as fractions of the page size; 🎵 Player toggles the compact track/letter panel.
 - Parts: the choir has Soprano 1, Soprano 2, Alto 1, Alto 2 (4-part) and Tops, Middles, Lowers (3-part).
@@ -35,7 +38,7 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
   and shows a "Tap to update" banner, so leaders never need to reopen the link (that makes a new, empty copy).
 - iPad audio must start from a tap: keep `player.prepare()` before commands and `player.unlock()` on the mic tap.
 
-## Status (v12, 10 Nov 2026) - Carol is testing on her iPad; next session = her feedback
+## Status (v13, 10 Nov 2026) - Carol is testing on her iPad; next session = her feedback
 Done and live: songs/scores/tracks, tap-along timestamps (+ paste table, + read times printed on the
 score), rehearsal Play panel (track buttons, start-from letters/bar, Speak/Stop/Again/Back, speed),
 voice + typed commands, notes / covered / fix-next-time, summary sharing, score mark-up (Pencil works,
@@ -47,7 +50,9 @@ Still to confirm on Carol's iPad:
 - Reading times from her real "with timestamps" PDFs: how many found, letters correct?
 - How slowed-down tracks sound (pitch preserved), especially at 50%.
 
+Still to confirm: does Speak now respond straight away (direct or keyboard mode)? What does Help say for her iPad?
 Testing: `npm test` (unit) and tests/browser/README.md (Playwright flows + fixture generator).
 Version history: v5 big controls + mark-up; v6/v7 Pencil drawing + fresh-file fetching; v8 parts;
-v9 rehearsal part choice; v10 score times; v11 add song mid-rehearsal; v12 speed.
+v9 rehearsal part choice; v10 score times; v11 add song mid-rehearsal; v12 speed; v13 Speak fallback to keyboard dictation
+(Carol: mic only responded after tapping the type box first) + listen() timeouts.
 Reminder for Carol: each Safari tab or Home Screen icon has its own separate storage; always use one icon.

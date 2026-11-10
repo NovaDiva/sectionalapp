@@ -821,15 +821,22 @@ async function screenRehearsal(id, tab = 'play') {
   }
 
   const voiceOn = () => localStorage.getItem('voiceOff') !== '1';
+  let useKeyboardVoice = false; // switches on if direct listening doesn't work on this iPad
 
-  function controlButtons(input, go, compact) {
+  function controlButtons(input, go, compact, { showVoiceTip, setDictating }) {
+    // Voice via the keyboard's own 🎤 (dictation): used where the iPad doesn't let web
+    // apps listen directly. The command runs by itself once the words stop changing.
+    const startKeyboardVoice = (why) => {
+      useKeyboardVoice = true;
+      input.value = '';
+      input.focus();
+      showVoiceTip(true);
+      setDictating(true);
+      if (why) toast(why);
+    };
     const mic = h('button', { class: `big-ctl mic ${compact ? 'compact' : ''}`, type: 'button', 'aria-label': 'Speak a command', onclick: async () => {
       if (isListening()) { stopListening(); return; }
-      if (!voiceSupported) {
-        input.focus();
-        toast('Tap the 🎤 on the keyboard and speak, then tap Go');
-        return;
-      }
+      if (!voiceSupported || useKeyboardVoice) { startKeyboardVoice(); return; }
       player.unlock();
       const wasPlaying = player.state.playing;
       if (wasPlaying) player.pause(); // so the mic hears you, not the track
@@ -839,11 +846,19 @@ async function screenRehearsal(id, tab = 'play') {
       try {
         const heard = await listen({ onInterim: (t) => { input.value = t; } });
         if (heard) { input.value = heard; go(); }
-        else if (wasPlaying) player.resume();
+        else {
+          toast('I didn\'t hear anything. Tap Speak and try again.');
+          if (wasPlaying) player.resume();
+        }
       } catch (e) {
-        toast(/not-allowed|service-not-allowed/.test(e.message)
-          ? 'Microphone not allowed. Use the 🎤 on the keyboard instead, or allow the microphone in Settings.'
-          : 'Sorry, I didn\'t catch that. Try again, or type it.');
+        const m = e.message || '';
+        if (/no-start|not-allowed|service-not-allowed|audio-capture|not-supported|network/.test(m)) {
+          startKeyboardVoice(/not-allowed/.test(m)
+            ? 'The iPad didn\'t allow the app to listen, so use the keyboard\'s 🎤 instead.'
+            : null);
+        } else {
+          toast('Sorry, I didn\'t catch that. Try again, or type it.');
+        }
       } finally {
         mic.classList.remove('listening');
         mic.lastChild.textContent = 'Speak';
@@ -861,12 +876,28 @@ async function screenRehearsal(id, tab = 'play') {
       type: 'text', class: 'grow cmd', placeholder: 'Or type: "letter B", "bar 32", "alto bar 32"',
       autocapitalize: 'none', autocomplete: 'off', enterkeyhint: 'go', 'aria-label': 'Command',
     });
+    let dictating = false;
+    let dictTimer = null;
+    const tip = h('div', { class: 'voice-tip', hidden: true },
+      h('div', { class: 'voice-tip-big' }, 'Now tap the 🎤 on the keyboard and speak'),
+      h('div', {}, 'The microphone key is next to the space bar. Say e.g. "letter B" or "alto bar 32". When you stop talking, the app plays it.'));
+    const showVoiceTip = (on) => { tip.hidden = !on; tip.parentElement?.classList.toggle('dictating', on); };
     const go = () => {
+      clearTimeout(dictTimer);
+      dictating = false;
+      showVoiceTip(false);
       const v = input.value;
       input.value = '';
       runCommand(v);
-      if (compact) { toast(r.log[r.log.length - 1]?.text || ''); input.blur(); }
+      if (compact) { toast(r.log[r.log.length - 1]?.text || ''); }
+      input.blur();
     };
+    input.addEventListener('input', () => {
+      if (!dictating) return;
+      clearTimeout(dictTimer);
+      if (input.value.trim()) dictTimer = setTimeout(go, 1600); // words stopped changing: run it
+    });
+    input.addEventListener('blur', () => { setTimeout(() => { if (!input.value.trim()) { dictating = false; showVoiceTip(false); } }, 300); });
     const form = h('form', { class: 'row cmd-row', onsubmit: (e) => { e.preventDefault(); go(); } },
       input, h('button', { class: 'btn primary go', type: 'submit' }, 'Go'));
     return h('div', { class: `play-panel ${compact ? 'compact' : ''}` },
@@ -881,7 +912,8 @@ async function screenRehearsal(id, tab = 'play') {
       trackButtons(compact ? 'compact' : ''),
       compact ? null : h('div', { class: 'panel-label' }, 'Start from'),
       startButtons(compact ? 'compact' : ''),
-      controlButtons(input, go, compact),
+      controlButtons(input, go, compact, { showVoiceTip, setDictating: (v) => { dictating = v; } }),
+      tip,
       compact ? null : h('div', { class: 'panel-label' }, 'Speed'),
       speedButtons(compact),
       form);
@@ -1174,6 +1206,9 @@ async function screenMore() {
         h('input', { type: 'checkbox', checked: localStorage.getItem('voiceOff') !== '1',
           onchange: (e) => { localStorage.setItem('voiceOff', e.target.checked ? '0' : '1'); toast(e.target.checked ? 'Voice button on' : 'Voice button off'); } }),
         h('span', {}, 'Show the 🎤 Speak button in rehearsal')),
+      h('p', { class: 'small' }, voiceSupported
+        ? 'This iPad can listen directly: tap Speak and talk. If it doesn\'t respond, the app switches to the keyboard\'s 🎤 instead.'
+        : 'On this iPad, Speak uses the keyboard\'s 🎤 key: tap Speak, then the 🎤 next to the space bar, and talk. The command runs when you stop.'),
       h('p', { class: 'muted small' }, 'Using a Bluetooth speaker? When the microphone is used, the iPad can move the sound off the speaker and back to the iPad. If that happens, turn the voice button off and use the track and letter buttons instead.')),
     h('div', { class: 'card' },
       h('h2', {}, 'No sound from the speaker?'),

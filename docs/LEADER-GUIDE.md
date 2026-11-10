@@ -47,6 +47,8 @@ Tips:
    - Use the big **⏹ Stop**, **↺ Again** and **⏪ Back 5s** buttons.
    - **Speed:** tap **90%**, **80%**, **70%**, **60%** or **50%** to slow the track down (the pitch stays the same). Tap **Normal** to go back. The speed stays until you change it, and shows in the player at the bottom (e.g. "· 80%"). You can also say "slower", "half speed", "speed 80" or "normal speed".
 3. **Voice (optional):** tap **🎤 Speak** and say e.g. "letter B", "bar 32", "alto 2 bar 32", "first altos letter C" or "middles from the top". Saying a part switches to that track.
+   - If a green box appears saying **"Now tap the 🎤 on the keyboard and speak"**, this iPad uses the keyboard's own microphone. Tap the 🎤 key next to the space bar and speak. When you stop talking, the app plays it by itself (no need to tap Go).
+   - ❔ Help → 🎤 Voice button tells you which way your iPad works.
    You can also type the same words in the box and tap **Go**.
    Using a Bluetooth speaker? The iPad may move the sound off the speaker when the microphone is used. If so, turn the voice button off in **❔ Help** and use the buttons.
 4. Tap **📖 Score** to show the score full screen. **🎵 Player** shows or hides the track and letter buttons.
