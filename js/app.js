@@ -1002,24 +1002,30 @@ async function screenRehearsal(id, tab = 'play') {
       // Speaking a note uses the iPad keyboard's own dictation (good for longer notes, and the
       // words can be checked before saving). No extra microphone code, by design.
       const noteTip = h('div', { class: 'voice-tip', hidden: true },
-        h('div', { class: 'voice-tip-big' }, 'Now tap the 🎤 on the keyboard and speak your note'),
-        h('div', {}, 'The microphone key is next to the space bar. When you have finished, check the words and tap + Add note.'));
+        h('div', { class: 'voice-tip-big' }, 'Now tap the 🎙 microphone key on the keyboard and speak'),
+        h('div', {}, 'It is at the bottom left of the keyboard, next to .?123. Your words appear in the box. Check them, then tap + Add note.'));
+      const typePrompt = ta.placeholder;
+      const speakPrompt = '👇 Now tap the 🎙 key at the bottom left of the keyboard (next to .?123) and speak your note.';
       const speakNote = () => {
         if (player.state.playing) player.pause(); // so dictation hears you, not the music
         noteTip.hidden = false;
+        ta.placeholder = speakPrompt; // shows right above the keyboard
+        ta.classList.add('speaking');
         ta.focus();
+        // keep the note box (with the instruction) in view above the keyboard
+        setTimeout(() => ta.scrollIntoView({ block: 'center', behavior: 'smooth' }), 350);
       };
       const addIt = () => {
         if (!ta.value.trim()) { ta.focus(); return; }
         addNote(ta.value.trim()); ta.value = ''; noteTip.hidden = true; renderTab(); toast('Note saved');
       };
-      ta.addEventListener('blur', () => { setTimeout(() => { if (!ta.value.trim()) noteTip.hidden = true; }, 300); });
+      ta.addEventListener('blur', () => { setTimeout(() => { if (!ta.value.trim()) { noteTip.hidden = true; ta.placeholder = typePrompt; ta.classList.remove('speaking'); } }, 300); });
       const list = [...r.notes].sort((a, b) => b.at - a.at);
       fill(tabBody,
         h('div', { class: 'card' },
           h('button', { class: 'big-ctl mic note-mic', type: 'button', onclick: speakNote }, h('span', { class: 'ctl-icon' }, '🎤'), h('span', {}, 'Speak a note')),
-          noteTip,
           ta,
+          noteTip,
           h('div', { class: 'row space' }, h('span', { class: 'muted' }, `For: ${curSong()?.title || 'general'}`),
             h('button', { class: 'btn primary big', onclick: addIt }, '+ Add note'))),
         list.length ? h('div', { class: 'list' }, list.map((n) => h('div', { class: 'list-item note' },

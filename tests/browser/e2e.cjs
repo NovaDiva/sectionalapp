@@ -95,6 +95,8 @@ const FX = process.argv[2], OUT = process.argv[3];
   await page.click('.seg-btn:has-text("Notes")');
   await page.click('.note-mic');
   console.log('note tip shown:', await page.isVisible('.voice-tip'), '| note box focused:', await page.evaluate(() => document.activeElement?.tagName === 'TEXTAREA'));
+  console.log('note prompt:', await page.getAttribute('textarea', 'placeholder'));
+  await page.screenshot({ path: OUT + '/05a-speak-note.png' });
   await page.keyboard.type('Breathe after bar 24');
   await page.click('button:has-text("+ Add note")');
   await page.waitForTimeout(200);

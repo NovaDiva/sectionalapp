@@ -325,3 +325,5 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
 
 /* Notes: speak a note */
 .big-ctl.note-mic { width: 100%; flex-direction: row; gap: 12px; min-height: 72px; font-size: 20px; }
+textarea.speaking { border: 2px solid var(--orange); }
+textarea.speaking::placeholder { color: var(--orange); font-weight: 700; opacity: 1; }
