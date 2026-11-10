@@ -34,6 +34,8 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
 - Look: Hummingsong brand (v21). Black header with icons/hummingsong-logo.png (Hummingsong Choirs, white text,
   made for black), teal #1b5a64 replaces the old purple, orange #c95a0c for MARK and the chosen speed, gold for
   flashes; app icon = the hummingbird on white. Colours taken from the logo (hummingsong.com.au not reachable here).
+  Header layout CONFIRMED by Carol (v26, "perfect, keep that"): light page-colour strip at the top (--top-band =
+  safe-area + 50px) behind the iPad status bar, then the black header with logo + title. Don't change it.
 - Summary is shared with the iPad share sheet (email/WhatsApp).
 
 ## Working on it
