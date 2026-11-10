@@ -38,7 +38,7 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
   and shows a "Tap to update" banner, so leaders never need to reopen the link (that makes a new, empty copy).
 - iPad audio must start from a tap: keep `player.prepare()` before commands and `player.unlock()` on the mic tap.
 
-## Status (v14, 10 Nov 2026) - Carol is testing on her iPad; next session = her feedback
+## Status (v15, 10 Nov 2026) - Carol is testing on her iPad; next session = her feedback
 Done and live: songs/scores/tracks, tap-along timestamps (+ paste table, + read times printed on the
 score), rehearsal Play panel (track buttons, start-from letters/bar, Speak/Stop/Again/Back, speed),
 voice + typed commands, notes / covered / fix-next-time, summary sharing, score mark-up (Pencil works,
@@ -50,7 +50,7 @@ Still to confirm on Carol's iPad:
 - Reading times from her real "with timestamps" PDFs: how many found, letters correct?
 - How slowed-down tracks sound (pitch preserved), especially at 50%.
 
-Still to confirm: speaker volume no longer jumps on each play (v14)? Does Speak now respond straight away (direct or keyboard mode)? What does Help say for her iPad?
+Still to confirm: speaker volume no longer jumps on each play (v15)? Does Speak now respond straight away (direct or keyboard mode)? What does Help say for her iPad?
 Testing: `npm test` (unit) and tests/browser/README.md (Playwright flows + fixture generator).
 Version history: v5 big controls + mark-up; v6/v7 Pencil drawing + fresh-file fetching; v8 parts;
 v9 rehearsal part choice; v10 score times; v11 add song mid-rehearsal; v12 speed; v14: setSoundMode only assigns navigator.audioSession.type when it differs (re-applying it
