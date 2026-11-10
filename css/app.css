@@ -1,12 +1,16 @@
 :root {
-  --brand: #5b2a86;
-  --brand-dark: #3f1c5e;
-  --brand-soft: #efe6f7;
+  /* Hummingsong brand (from the logo): teal/aqua, orange, gold, rust, cream; black header */
+  --brand: #1b5a64;
+  --brand-dark: #123f46;
+  --brand-soft: #e1eff0;
+  --orange: #c95a0c;
+  --gold: #f6c23e;
+  --header: #000;
   --bg: #f7f5f2;
   --card: #fff;
   --text: #1d1b20;
-  --muted: #6b6670;
-  --line: #e2dde6;
+  --muted: #5f6b6d;
+  --line: #dbe2e3;
   --danger: #b3261e;
   --ok: #1e7b45;
   --radius: 14px;
@@ -100,14 +104,14 @@ ul.plain { margin: 0; padding-left: 20px; }
 
 .hero {
   display: flex; align-items: center; gap: 18px; padding: 22px; border-radius: 18px;
-  background: var(--brand); color: #fff; text-decoration: none; box-shadow: 0 2px 8px rgba(91,42,134,.3);
+  background: var(--brand); color: #fff; text-decoration: none; box-shadow: 0 2px 8px rgba(27,90,100,.3);
 }
 .hero.continue { background: var(--ok); box-shadow: 0 2px 8px rgba(30,123,69,.3); }
 .hero-icon { font-size: 34px; width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,.2); display: grid; place-items: center; flex: none; }
 .hero-title { font-size: 22px; font-weight: 700; }
 
 /* segmented tabs in rehearsal */
-.seg { display: flex; gap: 6px; background: #e9e4ee; padding: 5px; border-radius: 14px; overflow-x: auto; }
+.seg { display: flex; gap: 6px; background: #e3ecee; padding: 5px; border-radius: 14px; overflow-x: auto; }
 .seg-btn { flex: 1; min-height: 50px; border: 0; border-radius: 10px; background: transparent; font: inherit; font-weight: 600; white-space: nowrap; padding: 0 12px; color: var(--text); }
 .seg-btn.on { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.12); color: var(--brand-dark); }
 .song-bar { display: flex; flex-direction: column; gap: 10px; }
@@ -120,7 +124,7 @@ ul.plain { margin: 0; padding-left: 20px; }
 }
 .bubble { max-width: 85%; padding: 10px 14px; border-radius: 16px; white-space: pre-wrap; }
 .bubble.you { align-self: flex-end; background: var(--brand); color: #fff; border-bottom-right-radius: 4px; }
-.bubble.app { align-self: flex-start; background: #f0edf3; border-bottom-left-radius: 4px; }
+.bubble.app { align-self: flex-start; background: #edf3f4; border-bottom-left-radius: 4px; }
 .suggestions .chip { font-size: 16px; }
 .cmd { font-size: 20px !important; }
 .btn.mic { font-size: 24px; min-width: 60px; border-color: var(--brand); background: var(--brand-soft); }
@@ -134,11 +138,11 @@ ul.plain { margin: 0; padding-left: 20px; }
 .scrub { width: 100%; height: 40px; accent-color: var(--brand); }
 .mark-btn {
   width: 100%; min-height: 120px; font-size: 40px; letter-spacing: 4px; border-radius: 20px;
-  background: #d9480f; border-color: #d9480f; color: #fff; transition: background .15s;
+  background: var(--orange); border-color: var(--orange); color: #fff; transition: background .15s;
 }
-.mark-btn.flash { background: #ffa94d; }
+.mark-btn.flash { background: var(--gold); }
 .marks { display: flex; flex-direction: column; gap: 8px; }
-.mark-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 8px; border-radius: 12px; background: #faf8fb; }
+.mark-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 8px; border-radius: 12px; background: #f6f9f9; }
 .bar-in { width: 84px !important; }
 .let-in { width: 96px !important; text-transform: uppercase; }
 .let-in::placeholder { text-transform: none; }
@@ -183,7 +187,7 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
   padding: calc(8px + env(safe-area-inset-top, 0px)) 10px 8px;
 }
 .overlay-title { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.overlay .cmd-row { background: #ece6f2; padding: 6px 10px; position: static; }
+.overlay .cmd-row { background: #e3ecee; padding: 6px 10px; position: static; }
 .pdf-body { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .pdf-page { background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.3); flex: none; }
 .pdf-page canvas { display: block; }
@@ -219,11 +223,11 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
   min-height: 64px; min-width: 120px; padding: 0 22px; border-radius: 14px; font: inherit; font-size: 20px; font-weight: 700;
   border: 2px solid var(--brand); background: #fff; color: var(--brand-dark); cursor: pointer;
 }
-.track-btn.on { background: var(--brand); color: #fff; box-shadow: 0 2px 6px rgba(91,42,134,.35); }
+.track-btn.on { background: var(--brand); color: #fff; box-shadow: 0 2px 6px rgba(27,90,100,.35); }
 .track-btn.on::before { content: '✓ '; }
 .start-btn {
   min-height: 60px; min-width: 64px; padding: 0 18px; border-radius: 14px; font: inherit; font-size: 20px; font-weight: 700;
-  border: 1.5px solid var(--line); background: #f4f0f8; color: var(--text); cursor: pointer;
+  border: 1.5px solid var(--line); background: #edf4f5; color: var(--text); cursor: pointer;
 }
 .start-btn.letter { min-width: 64px; font-size: 22px; }
 .bar-group { display: inline-flex; gap: 6px; align-items: center; }
@@ -245,7 +249,7 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
 .btn.go { min-height: 64px; min-width: 90px; font-size: 20px; }
 .chat { height: 26vh; min-height: 160px; }
 /* compact version inside the score viewer */
-.play-panel.compact { border-radius: 0; padding: 8px 10px; gap: 8px; background: #ece6f2; box-shadow: none; }
+.play-panel.compact { border-radius: 0; padding: 8px 10px; gap: 8px; background: #e3ecee; box-shadow: none; }
 .play-panel.compact .track-row, .play-panel.compact .start-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .play-panel.compact .track-btn, .play-panel.compact .start-btn { min-height: 52px; font-size: 18px; flex: none; }
 .play-panel.compact .hint { display: none; }
@@ -260,7 +264,7 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
 .ann-layer { position: absolute; inset: 0; pointer-events: none; }
 .pdf-page.drawing .ann-canvas { pointer-events: auto; touch-action: none; cursor: crosshair; }
 .pdf-page.drawing, .pdf-page.drawing * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-.pdf-page[data-tool=text] .ann-note, .pdf-page[data-tool=erase] .ann-note { pointer-events: auto; cursor: pointer; outline: 2px dashed rgba(91,42,134,.5); }
+.pdf-page[data-tool=text] .ann-note, .pdf-page[data-tool=erase] .ann-note { pointer-events: auto; cursor: pointer; outline: 2px dashed rgba(27,90,100,.5); }
 .ann-note {
   position: absolute; transform: translate(0, -50%); font-weight: 700; line-height: 1.15; white-space: pre-wrap;
   background: rgba(255,255,255,.85); padding: 1px 4px; border-radius: 4px; max-width: 45%;
@@ -301,7 +305,7 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
   min-height: 56px; min-width: 76px; padding: 0 14px; border-radius: 14px; border: 1.5px solid var(--line);
   background: #fff; font: inherit; font-size: 18px; font-weight: 700; color: var(--text); cursor: pointer;
 }
-.speed-btn.on { background: #1e7b45; border-color: #1e7b45; color: #fff; }
+.speed-btn.on { background: var(--orange); border-color: var(--orange); color: #fff; }
 .speed-row.compact { flex-wrap: nowrap; overflow-x: auto; }
 .speed-row.compact .speed-btn { min-height: 48px; min-width: 64px; font-size: 16px; flex: none; }
 .speed-label { font-size: 24px; }
@@ -310,3 +314,11 @@ body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
 .voice-tip { background: #e8f5ec; border: 2px solid #1e7b45; border-radius: 14px; padding: 12px 14px; color: #14532d; }
 .voice-tip-big { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
 .play-panel.compact.dictating .cmd-row { display: flex; }
+
+/* Hummingsong header: black with the logo */
+.topbar { background: var(--header); }
+.brand-logo { height: 54px; width: auto; display: block; flex: none; }
+.topbar h1 { border-left: 1.5px solid rgba(255,255,255,.35); padding-left: 14px; }
+.topbar .back { background: rgba(255,255,255,.14); }
+.overlay-bar { background: var(--header); }
+@media (max-width: 600px) { .brand-logo { height: 34px; } }

@@ -1,12 +1,12 @@
 {
-  "name": "Sectional – choir rehearsal helper",
+  "name": "Sectional – Hummingsong rehearsal helper",
   "short_name": "Sectional",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#f7f5f2",
-  "theme_color": "#5b2a86",
+  "theme_color": "#000000",
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
