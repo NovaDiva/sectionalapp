@@ -38,7 +38,7 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
   and shows a "Tap to update" banner, so leaders never need to reopen the link (that makes a new, empty copy).
 - iPad audio must start from a tap: keep `player.prepare()` before commands and `player.unlock()` on the mic tap.
 
-## Status (v16, 10 Nov 2026) - Carol is testing on her iPad; next session = her feedback
+## Status (v17, 10 Nov 2026) - Carol is testing on her iPad; next session = her feedback
 Done and live: songs/scores/tracks, tap-along timestamps (+ paste table, + read times printed on the
 score), rehearsal Play panel (track buttons, start-from letters/bar, Speak/Stop/Again/Back, speed),
 voice + typed commands, notes / covered / fix-next-time, summary sharing, score mark-up (Pencil works,
@@ -50,10 +50,13 @@ Still to confirm on Carol's iPad:
 - Reading times from her real "with timestamps" PDFs: how many found, letters correct?
 - How slowed-down tracks sound (pitch preserved), especially at 50%.
 
-v16: after a VOICE command (direct or keyboard dictation) playback starts "settled": 0.5 s muted warm-up,
-0.5 s pause, seek back, unmute, play (player.js SETTLE). Carol found pause+play restores the speaker volume
-after the mic is used (Bluetooth speaker jumped to full). Buttons/typing start instantly.
-Still to confirm: is the volume right after voice commands now (v16)? If the gap is too short/long, tune SETTLE. Does Speak now respond straight away (direct or keyboard mode)? What does Help say for her iPad?
+v16 BROKE on the iPad (muted warm-up): WebKit pauses a track that a page unmutes without a tap, which
+re-paused playback and left the mic/buttons confused. NEVER use audio.muted for this.
+v17: after a VOICE command (direct or keyboard dictation) play 0.5 s of generated SILENCE (silent WAV blob),
+pause 0.4 s, then load the track and play from the start point (player.js SETTLE, startSettled). Stop/Play/
+Again/buttons during the warm-up go straight to the real track (cancelSettle puts the track back).
+Keyboard-voice fallback is only sticky if the iPad refuses/can't listen; a slow start (6 s) falls back once.
+Still to confirm: is the volume right after voice commands now (v17)? Mic/buttons all OK? If the gap is too short/long, tune SETTLE. Does Speak now respond straight away (direct or keyboard mode)? What does Help say for her iPad?
 Testing: `npm test` (unit) and tests/browser/README.md (Playwright flows + fixture generator).
 Version history: v5 big controls + mark-up; v6/v7 Pencil drawing + fresh-file fetching; v8 parts;
 v9 rehearsal part choice; v10 score times; v11 add song mid-rehearsal; v12 speed; v14: setSoundMode only assigns navigator.audioSession.type when it differs (re-applying it

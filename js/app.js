@@ -827,8 +827,8 @@ async function screenRehearsal(id, tab = 'play') {
   function controlButtons(input, go, compact, { showVoiceTip, setDictating }) {
     // Voice via the keyboard's own 🎤 (dictation): used where the iPad doesn't let web
     // apps listen directly. The command runs by itself once the words stop changing.
-    const startKeyboardVoice = (why) => {
-      useKeyboardVoice = true;
+    const startKeyboardVoice = (why, { always = false } = {}) => {
+      if (always) useKeyboardVoice = true; // only when the iPad refuses or can't listen at all
       input.value = '';
       input.focus();
       showVoiceTip(true);
@@ -837,7 +837,7 @@ async function screenRehearsal(id, tab = 'play') {
     };
     const mic = h('button', { class: `big-ctl mic ${compact ? 'compact' : ''}`, type: 'button', 'aria-label': 'Speak a command', onclick: async () => {
       if (isListening()) { stopListening(); return; }
-      if (!voiceSupported || useKeyboardVoice) { startKeyboardVoice(); return; }
+      if (!voiceSupported || useKeyboardVoice) { startKeyboardVoice(null, { always: true }); return; }
       player.unlock();
       const wasPlaying = player.state.playing;
       if (wasPlaying) player.pause(); // so the mic hears you, not the track
@@ -854,9 +854,10 @@ async function screenRehearsal(id, tab = 'play') {
       } catch (e) {
         const m = e.message || '';
         if (/no-start|not-allowed|service-not-allowed|audio-capture|not-supported|network/.test(m)) {
-          startKeyboardVoice(/not-allowed/.test(m)
+          const refused = /not-allowed|service-not-allowed|not-supported/.test(m);
+          startKeyboardVoice(refused
             ? 'The iPad didn\'t allow the app to listen, so use the keyboard\'s 🎤 instead.'
-            : null);
+            : 'Listening didn\'t start, so use the keyboard\'s 🎤 this time.', { always: refused });
         } else {
           toast('Sorry, I didn\'t catch that. Try again, or type it.');
         }

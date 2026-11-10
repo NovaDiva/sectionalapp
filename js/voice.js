@@ -68,8 +68,8 @@ export function listen({ onInterim } = {}) {
       else finish(new Error(e.error || 'voice-error'));
     };
     rec.onend = () => finish(started || finalText || latest ? null : new Error('no-start'));
-    // Never started within 4 s: listening isn't working on this device.
-    timers.push(setTimeout(() => { if (!started) finish(new Error('no-start')); }, 4000));
+    // Never started within 6 s: listening isn't working right now.
+    timers.push(setTimeout(() => { if (!started) finish(new Error('no-start')); }, 6000));
     // Never listen for more than 12 s.
     timers.push(setTimeout(() => finish(), 12000));
     setSoundMode('play-and-record');

@@ -51,7 +51,7 @@ export const state = {
   songTitle: '',
   lastStart: 0,
   lastEnd: null,
-  get playing() { return !audio.paused; },
+  get playing() { return settling || !audio.paused; },
   get time() { return audio.currentTime || 0; },
   get duration() { return isFinite(audio.duration) ? audio.duration : 0; },
 };
@@ -97,32 +97,67 @@ export function load(item, songTitle = '') {
 // ---- "settled" start, used after a voice command.
 // Using the microphone puts the iPad in phone-call sound mode; when music starts again a
 // Bluetooth speaker can come back at full volume. Carol found that pausing and playing
-// again brings back the right volume, so: play muted for a moment (the iPad switches back
-// to music mode), pause briefly, then jump to the start point, unmute and play.
-export const SETTLE = { mutedMs: 500, pauseMs: 500 };
+// again brings back the right volume. So after a voice command we play half a second of
+// SILENCE, pause, then load the track and play it. (Muting is not used: an iPad pauses
+// a track that a web app unmutes without a tap, which broke v16.)
+export const SETTLE = { silenceMs: 500, pauseMs: 400 };
+let silenceUrl = null;
+function silence() {
+  if (silenceUrl) return silenceUrl;
+  // 1 second of silent 8 kHz 8-bit mono WAV, made here (no file needed).
+  const n = 8000, buf = new ArrayBuffer(44 + n), v = new DataView(buf);
+  const w = (o, str) => [...str].forEach((c, k) => v.setUint8(o + k, c.charCodeAt(0)));
+  w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+  w(36, 'data'); v.setUint32(40, n, true);
+  for (let k = 0; k < n; k++) v.setUint8(44 + k, 128);
+  silenceUrl = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+  return silenceUrl;
+}
 let settleTimers = [];
 let settling = false;
+let settleTarget = null; // { item, start, end }
+// Stop the warm-up. If it was still on the silent clip, put the real track back in place
+// (at its start point) so Play / Again / Stop work on the track, never on the silence.
 function cancelSettle() {
   settleTimers.forEach(clearTimeout);
   settleTimers = [];
-  if (settling) { settling = false; audio.muted = false; }
+  const wasSettling = settling;
+  settling = false;
+  if (wasSettling && settleTarget && audio.src === silenceUrl) {
+    const url = urls.get(settleTarget.item.blobId);
+    if (url) { audio.pause(); audio.src = url; pendingSeek = settleTarget.start; stopAt = settleTarget.end; }
+  }
+  settleTarget = null;
 }
-function startSettled(start) {
+function startSettled(item, start, end, songTitle) {
+  cancelSettle();
   settling = true;
-  audio.muted = true;
+  settleTarget = { item, start, end };
+  state.track = item;
+  state.songTitle = songTitle;
+  stopAt = null;
+  pendingSeek = null;
+  audio.src = silence();
   audio.play().catch(() => {});
   settleTimers.push(setTimeout(() => {
     audio.pause();
     settleTimers.push(setTimeout(() => {
-      settling = false;
       settleTimers = [];
-      try { audio.currentTime = start; } catch { pendingSeek = start; }
-      audio.muted = false;
+      settling = false;
+      settleTarget = null;
+      const url = urls.get(item.blobId);
+      if (!url) return;
+      stopAt = end;
+      audio.src = url;
+      pendingSeek = start;
       applySpeed();
       audio.play().catch(() => {});
       emit();
     }, SETTLE.pauseMs));
-  }, SETTLE.mutedMs));
+  }, SETTLE.silenceMs));
+  emit();
 }
 export function isSettling() { return settling; }
 
@@ -130,6 +165,13 @@ export function playFrom(item, start = 0, end = null, songTitle = '', { settle =
   const url = urls.get(item.blobId);
   if (!url) return false;
   cancelSettle();
+  if (settle) {
+    state.lastStart = start;
+    state.lastEnd = end;
+    setSoundMode('playback');
+    startSettled(item, start, end, songTitle);
+    return true;
+  }
   stopAt = end;
   state.lastStart = start;
   state.lastEnd = end;
@@ -145,8 +187,7 @@ export function playFrom(item, start = 0, end = null, songTitle = '', { settle =
   }
   setSoundMode('playback');
   applySpeed();
-  if (settle) startSettled(start);
-  else audio.play().catch(() => {});
+  audio.play().catch(() => {});
   emit();
   return true;
 }
@@ -179,10 +220,13 @@ export function resume({ settle = false } = {}) {
   cancelSettle();
   stopAt = null;
   setSoundMode('playback');
-  if (settle) startSettled(audio.currentTime || 0);
+  if (settle) startSettled(state.track, audio.currentTime || 0, null, state.songTitle);
   else audio.play().catch(() => {});
 }
-export function toggle() { audio.paused ? resume() : pause(); }
+export function toggle() {
+  if (settling) { cancelSettle(); audio.play().catch(() => {}); emit(); return; }
+  audio.paused ? resume() : pause();
+}
 export function seekBy(sec) {
   if (!state.track) return;
   audio.currentTime = Math.max(0, Math.min((audio.duration || 0), audio.currentTime + sec));
@@ -207,4 +251,4 @@ export function forget(item) {
 }
 
 // For tests: what the audio element is doing.
-export function debugState() { return { muted: audio.muted, paused: audio.paused, time: audio.currentTime }; }
+export function debugState() { return { muted: audio.muted, paused: audio.paused, time: audio.currentTime, silent: audio.src === silenceUrl, settling }; }
