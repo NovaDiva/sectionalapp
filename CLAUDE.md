@@ -49,36 +49,45 @@ Live at https://hummingsong-novadiva.github.io/sectionalapp/ (GitHub Pages, serv
   and shows a "Tap to update" banner, so leaders never need to reopen the link (that makes a new, empty copy).
 - iPad audio must start from a tap: keep `player.prepare()` before commands and `player.unlock()` on the mic tap.
 
-## Status (v27, 11 Nov 2026) - Carol is testing on her iPad; next session = her feedback
-Done and live: songs/scores/tracks, tap-along timestamps (+ paste table, + read times printed on the
-score), rehearsal Play panel (track buttons, start-from letters/bar, Speak/Stop/Again/Back, speed),
-voice + typed commands, notes / covered / fix-next-time, summary sharing, score mark-up (Pencil works,
-confirmed by Carol), parts + "my parts" filtering, part choice per rehearsal, add/remove songs mid-rehearsal,
-slow-down speed (Normal…50%), update banner, Bluetooth sound-mode attempt, backup/restore.
+## Status (v27, 11 Nov 2026) - WAITING for Carol's feedback after her next real rehearsal
+Live: songs/scores/tracks; timestamps (tap-along MARK, paste table, read times printed on the score);
+rehearsal (part choice, track buttons, start-from letters/bar, Speak/Stop/Again/Back 5s, speed 50-100%,
++ Add song mid-rehearsal); Notes tab with "Speak a note" (keyboard dictation); score viewer + mark-up
+(Pencil confirmed working); parts + "my parts"; summary sharing; Hummingsong branding + confirmed header;
+update banner; backup/restore; iPad + Android install steps in Help. Covered / Fix next time are PARKED.
 
-Still to confirm on Carol's iPad:
-- Does the Bluetooth speaker stay connected after using the 🎤? (audioSession fix; otherwise voice can be switched off)
-- Reading times from her real "with timestamps" PDFs: how many found, letters correct?
-- How slowed-down tracks sound (pitch preserved), especially at 50%.
+When Carol comes back, start by asking/checking (she has not answered these yet):
+1. Help -> Voice button: does it say "can listen directly" or "uses the keyboard's 🎤"?
+2. Speak: works for several commands in a row? Speaker volume right after a voice command (v17 warm-up:
+   0.5 s silence + 0.4 s pause)? Gap too long/short -> tune SETTLE in js/player.js.
+3. Bluetooth speaker stays connected after Speak? (if not: voice off in Help, or offer clicker/foot pedal)
+4. "Use times from the score" on her real "with timestamps" PDFs: how many times/letters found, correct?
+5. Slowed tracks sound OK (pitch kept), esp. 50%?
+6. Speak a note (keyboard 🎙 bottom-left) working?
+Known/accepted: the orange mic dot stays on during playback after voice use (iPad behaviour).
 
-v16 BROKE on the iPad (muted warm-up): WebKit pauses a track that a page unmutes without a tap, which
-re-paused playback and left the mic/buttons confused. NEVER use audio.muted for this.
-v17: after a VOICE command (direct or keyboard dictation) play 0.5 s of generated SILENCE (silent WAV blob),
-pause 0.4 s, then load the track and play from the start point (player.js SETTLE, startSettled). Stop/Play/
-Again/buttons during the warm-up go straight to the real track (cancelSettle puts the track back).
-v18 (abort + audioSession 'auto'->'playback' flip after listening) and v19 (readOnly/blur/focus-sink to close
-the keyboard) did NOT clear the orange mic dot and v19 stopped Speak hearing her after the first command.
-v20 = app code restored EXACTLY to v17 (878e743): voice worked repeatedly there; the orange dot during playback
-is iPad behaviour after web speech/dictation and is accepted for now.
-LESSON: no more speculative microphone/audio-session changes without a way to test on her iPad. Changes that
-alter mic or audio-session behaviour should be offered as an opt-in setting, so she can switch back herself.
-Options offered to Carol: keep v17 voice (dot stays, small battery cost) / switch voice off in Help /
-Bluetooth clicker or foot pedal for hands-free control without the microphone.
-Keyboard-voice fallback is only sticky if the iPad refuses/can't listen; a slow start (6 s) falls back once.
-Still to confirm: is the volume right after voice commands (v17/v20 warm-up)? Mic/buttons all OK? If the gap is too short/long, tune SETTLE. Does Speak now respond straight away (direct or keyboard mode)? What does Help say for her iPad?
-Testing: `npm test` (unit) and tests/browser/README.md (Playwright flows + fixture generator).
-Version history: v26 light top band (--top-band = safe-area + 50px, page colour) above the black header so the iPad's status-bar fade is light-on-light (Carol's idea); status bar default + theme colour #f7f5f2; v25 header top padding +24px (logo/title below the iPad's faded status-bar band; Carol: v24 still 'too high'); v24 solid black status-bar strip (status-bar-style black-translucent + html bg black; header already pads safe-area-inset-top); v23 clearer Speak-a-note prompt (keyboard 🎙 key is bottom-left on Carol's iPad, next to .?123); v22 Speak a note + Covered/Fix parked; v21 Hummingsong branding; v20 voice restored to v17; v5 big controls + mark-up; v6/v7 Pencil drawing + fresh-file fetching; v8 parts;
-v9 rehearsal part choice; v10 score times; v11 add song mid-rehearsal; v12 speed; v14: setSoundMode only assigns navigator.audioSession.type when it differs (re-applying it
-reset Carol's Bluetooth speaker to full volume on every play); v13 Speak fallback to keyboard dictation
-(Carol: mic only responded after tapping the type box first) + listen() timeouts.
+How to work: check `git status`/`git log` first; read the lessons below before touching mic/audio code.
+After every change: `npm test`, the browser flows in tests/browser/README.md (fixtures via make-fixtures.sh),
+bump VERSION in sw.js, update this file, commit + push to claude/choir-sectional-app-wg6esg (GitHub Pages
+publishes in ~1 min; check with the Actions "pages build and deployment" run). Tell Carol the new version
+number she should see at the bottom of Help.
+
+Mic/audio history and LESSONS:
+- v14: setSoundMode only assigns navigator.audioSession.type when it differs (re-applying it reset her
+  Bluetooth speaker to full volume on every play).
+- v16 BROKE on the iPad (muted warm-up): WebKit pauses a track that a page unmutes without a tap.
+  NEVER use audio.muted for this.
+- v17: after a VOICE command play 0.5 s of generated silence, pause 0.4 s, then the track from the start point
+  (player.js SETTLE/startSettled); buttons/Stop during the warm-up go straight to the real track.
+- v18 (audioSession flip after listening) and v19 (forcing the keyboard closed) did NOT clear the orange dot and
+  v19 broke Speak -> v20 restored the app code exactly to v17 (878e743).
+- LESSON: no speculative microphone/audio-session changes without a way to test on her iPad. Offer any such
+  change as an opt-in setting she can switch back herself.
+- Keyboard-voice fallback is only sticky if the iPad refuses/can't listen; a slow start (6 s) falls back once.
+
+Version history: v27 Android steps in Help; v26 light top band above the black header (Carol: keep);
+v25 header top padding; v24 black status strip (replaced by v26); v23 clearer Speak-a-note prompt;
+v22 Speak a note + Covered/Fix parked; v21 Hummingsong branding; v20 voice restored to v17; v17 silent warm-up;
+v13 keyboard-voice fallback; v12 speed; v11 add song mid-rehearsal; v10 score times; v9 rehearsal part choice;
+v8 parts; v6/v7 Pencil drawing + fresh-file fetching; v5 big controls + mark-up.
 Reminder for Carol: each Safari tab or Home Screen icon has its own separate storage; always use one icon.
