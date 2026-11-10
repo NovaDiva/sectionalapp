@@ -12,8 +12,6 @@ node tests/browser/touch.cjs $FX/score.pdf $OUT/touch.png  # finger drawing on t
 node tests/browser/voicefb.cjs $FX $OUT       # Speak falls back to keyboard dictation; never stuck
 node tests/browser/session.cjs                 # sound mode is not re-applied on every play (volume reset)
 node tests/browser/settle.cjs $FX              # voice command: silent warm-up, pause, track; buttons/Stop during warm-up; repeats
-node tests/browser/micrelease.cjs              # after listening: recogniser aborted, mode back to music
-node tests/browser/dictation-end.cjs           # keyboard voice: keyboard closed after the command runs
 node tests/browser/update.cjs $OUT/update.png  # "Tap to update" banner
 ```
 

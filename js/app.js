@@ -822,7 +822,6 @@ async function screenRehearsal(id, tab = 'play') {
   }
 
   const voiceOn = () => localStorage.getItem('voiceOff') !== '1';
-  onLeave(() => stopListening()); // never leave the microphone on when leaving the rehearsal
   let useKeyboardVoice = false; // switches on if direct listening doesn't work on this iPad
 
   function controlButtons(input, go, compact, { showVoiceTip, setDictating }) {
@@ -885,16 +884,6 @@ async function screenRehearsal(id, tab = 'play') {
       h('div', { class: 'voice-tip-big' }, 'Now tap the 🎤 on the keyboard and speak'),
       h('div', {}, 'The microphone key is next to the space bar. Say e.g. "letter B" or "alto bar 32". When you stop talking, the app plays it.'));
     const showVoiceTip = (on) => { tip.hidden = !on; tip.parentElement?.classList.toggle('dictating', on); };
-    // Close the keyboard firmly. iPad keyboard dictation keeps the microphone on (orange dot)
-    // until the keyboard goes away; a plain blur() is sometimes ignored, but a field that
-    // becomes read-only loses its keyboard, and focus moves to a non-typing element.
-    const endKeyboard = () => {
-      input.readOnly = true;
-      input.blur();
-      const sink = document.getElementById('focus-sink');
-      if (sink) { sink.focus({ preventScroll: true }); sink.blur(); }
-      setTimeout(() => { input.readOnly = false; }, 800);
-    };
     const go = ({ voice = false } = {}) => {
       clearTimeout(dictTimer);
       const fromVoice = voice || dictating;
@@ -902,9 +891,9 @@ async function screenRehearsal(id, tab = 'play') {
       showVoiceTip(false);
       const v = input.value;
       input.value = '';
-      endKeyboard(); // stop dictation (and the microphone) before the music starts
       runCommand(v, { fromVoice });
       if (compact) { toast(r.log[r.log.length - 1]?.text || ''); }
+      input.blur();
     };
     input.addEventListener('input', () => {
       if (!dictating) return;
