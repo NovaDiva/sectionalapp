@@ -6,9 +6,9 @@ Your Sectional app starts empty: you add your own choir's songs, scores and trac
 
 1. Open the link you were sent in **Safari** on your iPad.
 2. Tap **Share** (the square with an arrow) → **Add to Home Screen** → **Add**.
-3. From now on, open **Sectional** from your home screen.
+3. From now on, open **Sectional** from your home screen. It works without Wi-Fi.
 
-Android tablet: open the link in **Chrome** → **⋮** menu → **Add to Home screen** (or **Install app**). It works without Wi-Fi.
+Android tablet: open the link in **Chrome** → **⋮** menu → **Add to Home screen** (or **Install app**).
 
 The four buttons along the bottom are **🎤 Rehearsal · 🎼 Songs · 🗂 Past · ❔ Help**.
 
