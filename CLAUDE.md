@@ -40,6 +40,12 @@ Live at https://novadiva.github.io/sectionalapp/ (GitHub Pages, served from bran
   flashes; app icon = the hummingbird on white. Colours taken from the logo (hummingsong.com.au not reachable here).
   Header layout CONFIRMED by Carol (v26, "perfect, keep that"): light page-colour strip at the top (--top-band =
   safe-area + 50px) behind the iPad status bar, then the black header with logo + title. Don't change it.
+- Giving a note (v28, Carol chose: keyboard + saved starting notes, 2 octaves with ◀ ▶ shift, ~2 s per tap,
+  clean tone not samples): js/pitch.js makes a piano-like WAV at A=440 (no files); player.playNote/playNotes use a
+  SECOND plain Audio element (track stays loaded; a playing track is paused; never slowed; unlocked with the mic
+  tap; after a voice command the same 0.5 s silence + 0.4 s pause warm-up). song.startNotes = { part: midi } set on
+  the song page (🎹 Starting notes), shown in rehearsal as orange "▶ Part: A4" buttons + 🎹 Keyboard toggle;
+  voice/typed "starting note", "give me the note", "lowers starting note" (commands.js 'startnote').
 - Summary is shared with the iPad share sheet (email/WhatsApp).
 
 ## Working on it
@@ -49,12 +55,12 @@ Live at https://novadiva.github.io/sectionalapp/ (GitHub Pages, served from bran
   and shows a "Tap to update" banner, so leaders never need to reopen the link (that makes a new, empty copy).
 - iPad audio must start from a tap: keep `player.prepare()` before commands and `player.unlock()` on the mic tap.
 
-## Status (v27, 11 Nov 2026) - WAITING for Carol's feedback after her next real rehearsal
+## Status (v28, 12 Nov 2026) - WAITING for Carol's feedback after her next real rehearsal
 Live: songs/scores/tracks; timestamps (tap-along MARK, paste table, read times printed on the score);
 rehearsal (part choice, track buttons, start-from letters/bar, Speak/Stop/Again/Back 5s, speed 50-100%,
 + Add song mid-rehearsal); Notes tab with "Speak a note" (keyboard dictation); score viewer + mark-up
 (Pencil confirmed working); parts + "my parts"; summary sharing; Hummingsong branding + confirmed header;
-update banner; backup/restore; iPad + Android install steps in Help. Covered / Fix next time are PARKED.
+update banner; backup/restore; iPad + Android install steps in Help; v28 piano keyboard + saved starting notes. Covered / Fix next time are PARKED.
 
 When Carol comes back, start by asking/checking (she has not answered these yet):
 1. Help -> Voice button: does it say "can listen directly" or "uses the keyboard's 🎤"?
@@ -64,6 +70,8 @@ When Carol comes back, start by asking/checking (she has not answered these yet)
 4. "Use times from the score" on her real "with timestamps" PDFs: how many times/letters found, correct?
 5. Slowed tracks sound OK (pitch kept), esp. 50%?
 6. Speak a note (keyboard 🎙 bottom-left) working?
+7. v28 starting notes: does the note play through the Bluetooth speaker, at a good volume? Tone OK? Does
+   "starting note" by voice work (after the short warm-up)? Keys big enough?
 Known/accepted: the orange mic dot stays on during playback after voice use (iPad behaviour).
 
 How to work: check `git status`/`git log` first; read the lessons below before touching mic/audio code.
@@ -85,7 +93,7 @@ Mic/audio history and LESSONS:
   change as an opt-in setting she can switch back herself.
 - Keyboard-voice fallback is only sticky if the iPad refuses/can't listen; a slow start (6 s) falls back once.
 
-Version history: v27 Android steps in Help; v26 light top band above the black header (Carol: keep);
+Version history: v28 piano keyboard + starting notes; v27 Android steps in Help; v26 light top band above the black header (Carol: keep);
 v25 header top padding; v24 black status strip (replaced by v26); v23 clearer Speak-a-note prompt;
 v22 Speak a note + Covered/Fix parked; v21 Hummingsong branding; v20 voice restored to v17; v17 silent warm-up;
 v13 keyboard-voice fallback; v12 speed; v11 add song mid-rehearsal; v10 score times; v9 rehearsal part choice;

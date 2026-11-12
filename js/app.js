@@ -2,6 +2,7 @@ import * as db from './db.js';
 import * as player from './player.js';
 import { parseCommand, canonicalVoice } from './commands.js';
 import { voiceSupported, listen, stopListening, isListening } from './voice.js';
+import { noteName, isBlack, LOWEST, HIGHEST } from './pitch.js';
 import { choirParts, setChoirParts, myParts, setMyParts, guessPart, partOf, visibleTracks } from './parts.js';
 import {
   formatTime, sortMarks, markTitle, lettersIn, parseTimestampTable, parseBarLetter, findLetter, timeForBar,
@@ -178,6 +179,61 @@ function speedButtons(compact = false) {
   const el = h('div', { class: `speed-row ${compact ? 'compact' : ''}` }, compact ? h('span', { class: 'speed-label' }, '🐢') : null, btns);
   onLeave(player.onChange(() => btns.forEach((b) => b.classList.toggle('on', Number(b.dataset.rate) === player.getSpeed()))));
   return el;
+}
+
+// ---------------------------------------------------------------- piano keyboard
+
+// Two octaves of piano keys, with buttons to move up or down an octave. Each tap calls
+// onKey(midi). The position is remembered on this iPad. With `selected`, that key is
+// marked (used when choosing a song's starting note).
+function pianoKeyboard({ onKey, selected = null } = {}) {
+  const SPAN = 24;
+  const maxLow = HIGHEST - SPAN;
+  let low = Number(localStorage.getItem('kbLow')) || 48; // C3 to B4
+  if (selected != null && (selected < low || selected >= low + SPAN)) low = Math.floor(selected / 12) * 12 - (selected % 12 < 6 ? 12 : 0);
+  low = Math.max(LOWEST, Math.min(maxLow, low));
+  let chosen = selected;
+  const range = h('span', { class: 'kb-range' });
+  const keys = h('div', { class: 'kb-keys' });
+  const downBtn = h('button', { class: 'btn kb-shift', type: 'button', 'aria-label': 'Lower octave', onclick: () => shift(-1) }, '◀ Lower');
+  const upBtn = h('button', { class: 'btn kb-shift', type: 'button', 'aria-label': 'Higher octave', onclick: () => shift(1) }, 'Higher ▶');
+  function shift(d) {
+    low = Math.max(LOWEST, Math.min(maxLow, low + 12 * d));
+    try { localStorage.setItem('kbLow', String(low)); } catch { /* private mode */ }
+    render();
+  }
+  function press(midi, key) {
+    chosen = midi;
+    keys.querySelectorAll('.key').forEach((k) => k.classList.toggle('chosen', selected !== null && Number(k.dataset.midi) === midi));
+    key.classList.add('sounding');
+    clearTimeout(key.timer);
+    key.timer = setTimeout(() => key.classList.remove('sounding'), 2000);
+    onKey?.(midi);
+  }
+  function render() {
+    range.textContent = `${noteName(low)} – ${noteName(low + SPAN - 1)}`;
+    downBtn.disabled = low <= LOWEST;
+    upBtn.disabled = low >= maxLow;
+    const whites = [];
+    for (let m = low; m < low + SPAN; m++) if (!isBlack(m)) whites.push(m);
+    const w = 100 / whites.length;
+    const mk = (m, cls, style, label) => {
+      const k = h('button', { class: `key ${cls} ${m === chosen && selected !== null ? 'chosen' : ''}`, type: 'button', style,
+        'data-midi': m, 'aria-label': noteName(m) + (m === 60 ? ' (middle C)' : ''), onclick: () => press(m, k) }, label);
+      return k;
+    };
+    fill(keys,
+      whites.map((m) => mk(m, `white ${m === 60 ? 'middle-c' : ''}`, '',
+        h('span', { class: 'key-label' }, m % 12 === 0 ? noteName(m) : noteName(m).replace(/\d+$/, '')))),
+      whites.map((m, i) => (isBlack(m + 1) && m + 1 < low + SPAN
+        ? mk(m + 1, 'black', `left:${(i + 1) * w - w * 0.3}%;width:${w * 0.6}%`, h('span', { class: 'key-label' }, noteName(m + 1).replace(/\d+$/, '')))
+        : null)));
+  }
+  render();
+  return h('div', { class: 'piano' },
+    h('div', { class: 'kb-bar' }, downBtn, range, upBtn),
+    keys,
+    h('div', { class: 'muted small kb-foot' }, 'Middle C (C4) has a dot. Each key sounds for about 2 seconds.'));
 }
 
 // ---------------------------------------------------------------- mini player
@@ -418,6 +474,7 @@ async function screenSong(id) {
             h('button', { class: 'btn icon danger', 'aria-label': 'Delete', onclick: () => remove(t) }, '🗑')))
         : h('p', { class: 'muted' }, tracks.length ? 'No tracks for your part yet.' : 'Add the full mix and the part tracks (e.g. Alto 1, Alto 2, Tops). You can pick several files at once.'),
     ),
+    startNotesCard(song, refresh),
     h('div', { class: 'row end' },
       h('button', { class: 'btn', onclick: async () => {
         const t = prompt('Song title:', song.title);
@@ -431,6 +488,43 @@ async function screenSong(id) {
       } }, '🗑 Delete song'),
     ),
   ], { back: '#/songs' });
+}
+
+// The starting note for each part, saved with the song (travels in backups).
+function startNotesCard(song, refresh) {
+  const saved = song.startNotes || {};
+  const mine = myParts();
+  const parts = showAllParts || !mine?.length ? choirParts() : mine;
+  const setNote = async (part) => {
+    let chosen = saved[part] ?? null;
+    const now = h('div', { class: 'kb-now' }, chosen != null ? `Starting note: ${noteName(chosen)}` : 'Tap a key to hear it. Tap Save when it is right.');
+    const body = h('div', {},
+      pianoKeyboard({ selected: chosen, onKey: (m) => { chosen = m; player.playNote(m); now.textContent = `Starting note: ${noteName(m)}`; } }),
+      now);
+    const choice = await modal(`Starting note for ${part}`, body, [
+      { label: 'Cancel', value: () => null },
+      saved[part] != null ? { label: 'Remove', cls: 'btn danger', value: () => 'clear' } : null,
+      { label: 'Save', cls: 'btn primary', value: () => 'save' },
+    ].filter(Boolean));
+    player.pause();
+    if (!choice || (choice === 'save' && chosen == null)) return;
+    const fresh = (await db.get('songs', song.id)) || song;
+    fresh.startNotes = { ...(fresh.startNotes || {}) };
+    if (choice === 'clear') delete fresh.startNotes[part];
+    else fresh.startNotes[part] = chosen;
+    await db.put('songs', fresh);
+    toast(choice === 'clear' ? `Starting note for ${part} removed` : `${part}: ${noteName(chosen)} saved`);
+    refresh();
+  };
+  return h('div', { class: 'card' },
+    h('h2', {}, '🎹 Starting notes'),
+    h('p', { class: 'muted small' }, 'Save the note each part starts on. In rehearsal it is one tap (or say "starting note").'),
+    parts.map((p) => h('div', { class: 'item-row' },
+      h('div', { class: 'grow item-title' }, p),
+      saved[p] != null
+        ? h('button', { class: 'btn big note-play', 'aria-label': `Play ${p} starting note`, onclick: () => player.playNote(saved[p]) }, `▶ ${noteName(saved[p])}`)
+        : h('span', { class: 'muted' }, 'Not set'),
+      h('button', { class: 'btn', onclick: () => setNote(p) }, saved[p] != null ? '✎ Change' : '+ Set note'))));
 }
 
 // ---------------------------------------------------------------- Timestamps (tap-along)
@@ -676,6 +770,7 @@ const HELP = [
   '• river tenor from the top (another song: start with part of its title)',
   '• stop · again · back 10 · forward 5',
   '• slower · half speed · speed 80 · normal speed',
+  '• starting note · give me the note · lowers starting note',
   '• note: altos flat at C',
   FEATURES.fixNextTime ? '• fix: tuning in bar 40 (adds to "Fix next time")' : null,
   'Letters and bars need the track\'s timestamps (🎼 Songs → ⏱ Timestamps).',
@@ -748,6 +843,21 @@ async function screenRehearsal(id, tab = 'play') {
       case 'speed': {
         const rate = player.setSpeed(a.rate ?? player.getSpeed() + a.by);
         addLog('app', rate === 1 ? 'Normal speed.' : `Playing at ${player.speedLabel(rate)} speed.`);
+        break;
+      }
+      case 'startnote': {
+        const s = curSong();
+        const named = guessPart(a.text);
+        const saved = s?.startNotes || {};
+        const list = named ? (saved[named] != null ? [[named, saved[named]]] : []) : savedNotes(s);
+        if (!list.length) {
+          addLog('app', named
+            ? `No starting note saved for ${named} in ${s?.title || 'this song'}. Set it on the song page (🎹 Starting notes).`
+            : `No starting note saved for ${s?.title || 'this song'} yet. Set it on the song page (🎹 Starting notes), or use 🎹 Keyboard.`);
+          break;
+        }
+        player.playNotes(list.map(([, m]) => m), { settle: fromVoice });
+        addLog('app', `Starting note${list.length > 1 ? 's' : ''}: ${list.map(([p, m]) => `${p} ${noteName(m)}`).join(', ')}.`);
         break;
       }
       case 'help': addLog('app', HELP); break;
@@ -828,6 +938,41 @@ async function screenRehearsal(id, tab = 'play') {
     };
     refreshers.add(render); render();
     return el;
+  }
+
+  // Saved starting notes of this rehearsal's parts for a song: [[part, midi], ...]
+  function savedNotes(song) {
+    const saved = song?.startNotes || {};
+    const named = savedNotesNamed(saved);
+    const want = rParts?.length ? rParts : null;
+    // With "Show all parts" every saved note is offered.
+    return named.filter(([p]) => !want || r.showAllParts || want.includes(p));
+  }
+  function savedNotesNamed(saved) { return choirParts().filter((p) => saved[p] != null).map((p) => [p, saved[p]]); }
+
+  // Big "starting note" buttons for the current song, and the 🎹 Keyboard toggle.
+  function startNoteRow(compact = false) {
+    const row = h('div', { class: `start-row note-row ${compact ? 'compact' : ''}` });
+    const kbWrap = h('div', { class: 'kb-wrap', hidden: true }, pianoKeyboard({ onKey: (m) => player.playNote(m) }));
+    const kbBtn = h('button', { class: 'start-btn kb-toggle', type: 'button', 'aria-expanded': 'false', onclick: () => {
+      kbWrap.hidden = !kbWrap.hidden;
+      kbBtn.classList.toggle('on', !kbWrap.hidden);
+      kbBtn.setAttribute('aria-expanded', String(!kbWrap.hidden));
+    } }, '🎹 Keyboard');
+    const render = () => {
+      const s = curSong();
+      const list = savedNotes(s);
+      fill(row,
+        list.map(([p, m]) => h('button', { class: 'start-btn note-btn', type: 'button', onclick: () => {
+          player.playNote(m);
+          addLog('app', `Starting note: ${p} ${noteName(m)}.`);
+          save();
+        } }, `▶ ${p}: ${noteName(m)}`)),
+        kbBtn,
+        !list.length && !compact ? h('span', { class: 'muted small' }, 'No starting note saved for this song. Set it on the song page.') : null);
+    };
+    refreshers.add(render); render();
+    return [row, kbWrap];
   }
 
   const voiceOn = () => localStorage.getItem('voiceOff') !== '1';
@@ -924,6 +1069,8 @@ async function screenRehearsal(id, tab = 'play') {
       trackButtons(compact ? 'compact' : ''),
       compact ? null : h('div', { class: 'panel-label' }, 'Start from'),
       startButtons(compact ? 'compact' : ''),
+      compact ? null : h('div', { class: 'panel-label' }, 'Starting note'),
+      startNoteRow(compact),
       controlButtons(input, go, compact, { showVoiceTip, setDictating: (v) => { dictating = v; } }),
       tip,
       compact ? null : h('div', { class: 'panel-label' }, 'Speed'),

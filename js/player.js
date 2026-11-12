@@ -5,6 +5,7 @@
 
 import { getBlob } from './db.js';
 import { formatTime } from './timestamps.js';
+import { toneWav, TONE } from './pitch.js';
 
 // Sound mode (iPadOS 16.4+ / Safari). 'playback' = music mode, so the iPad sends
 // sound to the chosen Bluetooth/AirPlay speaker. While the microphone is in use
@@ -164,6 +165,7 @@ export function isSettling() { return settling; }
 export function playFrom(item, start = 0, end = null, songTitle = '', { settle = false } = {}) {
   const url = urls.get(item.blobId);
   if (!url) return false;
+  stopNotes();
   cancelSettle();
   if (settle) {
     state.lastStart = start;
@@ -197,6 +199,7 @@ export function playFrom(item, start = 0, end = null, songTitle = '', { settle =
 const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
 let unlocked = false;
 export function unlock() {
+  unlockNotes();
   if (unlocked) return;
   unlocked = true;
   if (audio.src) {
@@ -210,13 +213,66 @@ export function unlock() {
 }
 audio.addEventListener('playing', () => { unlocked = true; });
 
+// ---- giving a note (on-screen piano keyboard, saved starting notes)
+// Its own ordinary audio player, so the loaded track stays where it is. A playing track
+// is paused first (you give the note before singing). Unlocked with the mic tap (unlock()),
+// so a voice command can give a note too. After a VOICE command it uses the same warm-up
+// as tracks (0.5 s silence, pause, then the note). Notes are never slowed down.
+const noteAudio = new Audio();
+noteAudio.preload = 'auto';
+const noteUrls = new Map();
+let noteTimers = [];
+let noteUnlocked = false;
+function noteUrl(midi) {
+  if (!noteUrls.has(midi)) noteUrls.set(midi, URL.createObjectURL(new Blob([toneWav(midi)], { type: 'audio/wav' })));
+  return noteUrls.get(midi);
+}
+function stopNotes() { noteTimers.forEach(clearTimeout); noteTimers = []; noteAudio.pause(); }
+function soundNote(midi) {
+  noteAudio.src = noteUrl(midi);
+  noteAudio.playbackRate = 1;
+  noteAudio.play().catch(() => {});
+}
+// Play one note, or several one after another (e.g. two parts' starting notes).
+export function playNotes(list, { settle = false } = {}) {
+  list = (Array.isArray(list) ? list : [list]).filter((m) => Number.isFinite(m));
+  if (!list.length) return false;
+  stopNotes();
+  cancelSettle();
+  if (!audio.paused) audio.pause();
+  setSoundMode('playback');
+  const gap = TONE.seconds * 1000 + 150;
+  let at = 0;
+  if (settle) {
+    noteAudio.src = silence();
+    noteAudio.play().catch(() => {});
+    noteTimers.push(setTimeout(() => noteAudio.pause(), SETTLE.silenceMs));
+    at = SETTLE.silenceMs + SETTLE.pauseMs;
+  }
+  list.forEach((m, i) => {
+    if (i === 0 && at === 0) soundNote(m); // straight from the tap
+    else noteTimers.push(setTimeout(() => soundNote(m), at + i * gap));
+  });
+  emit();
+  return true;
+}
+export const playNote = (midi, opts) => playNotes([midi], opts);
+function unlockNotes() {
+  if (noteUnlocked) return;
+  noteUnlocked = true;
+  noteAudio.src = SILENT_WAV;
+  noteAudio.play().then(() => noteAudio.pause()).catch(() => { noteUnlocked = false; });
+}
+noteAudio.addEventListener('playing', () => { noteUnlocked = true; });
+
 export function again(opts = {}) {
   if (!state.track) return false;
   return playFrom(state.track, state.lastStart, state.lastEnd, state.songTitle, opts);
 }
-export function pause() { cancelSettle(); audio.pause(); }
+export function pause() { stopNotes(); cancelSettle(); audio.pause(); }
 export function resume({ settle = false } = {}) {
   if (!state.track) return;
+  stopNotes();
   cancelSettle();
   stopAt = null;
   setSoundMode('playback');
@@ -233,7 +289,7 @@ export function seekBy(sec) {
   emit();
 }
 export function seekTo(sec) { if (state.track) { audio.currentTime = Math.max(0, sec); emit(); } }
-export function stop() { cancelSettle(); audio.pause(); stopAt = null; if (state.track) audio.currentTime = state.lastStart || 0; emit(); }
+export function stop() { stopNotes(); cancelSettle(); audio.pause(); stopAt = null; if (state.track) audio.currentTime = state.lastStart || 0; emit(); }
 
 export function describe() {
   if (!state.track) return '';
@@ -251,4 +307,4 @@ export function forget(item) {
 }
 
 // For tests: what the audio element is doing.
-export function debugState() { return { muted: audio.muted, paused: audio.paused, time: audio.currentTime, silent: audio.src === silenceUrl, settling }; }
+export function debugState() { return { noteSrc: noteAudio.src.slice(0, 20), notePaused: noteAudio.paused, noteTimers: noteTimers.length, muted: audio.muted, paused: audio.paused, time: audio.currentTime, silent: audio.src === silenceUrl, settling }; }

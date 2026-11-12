@@ -205,3 +205,30 @@ test('speed commands', () => {
   assert.deepEqual(parseCommand('play at 60%', ctx), { type: 'speed', rate: 0.6 });
   assert.equal(parseCommand('alto bar 70', ctx).type, 'play'); // a bar number is not a speed
 });
+
+test('starting note commands', async () => {
+  for (const t of ['starting note', 'give me the note', 'Give us our notes', 'lowers starting note', 'starting note for middles', 'pitch please', 'note please', 'the note', 'starting pitch']) {
+    assert.equal(parseCommand(t, ctx).type, 'startnote', t);
+  }
+  assert.equal(parseCommand('note: my notes are flat at C', ctx).type, 'note');
+  assert.equal(parseCommand('note: give me the note earlier', ctx).type, 'note');
+  assert.equal(parseCommand('alto letter B', ctx).type, 'play');
+});
+
+test('note names and pitch', async () => {
+  const { parseNote, noteName, freq, isBlack, toneWav } = await import('../js/pitch.js');
+  assert.equal(parseNote('A4'), 69);
+  assert.equal(parseNote('c4'), 60);
+  assert.equal(parseNote('F#3'), 54);
+  assert.equal(parseNote('B flat 3'), 58);
+  assert.equal(parseNote('Bb3'), 58);
+  assert.equal(parseNote('H2'), null);
+  assert.equal(noteName(54), 'F♯3');
+  assert.equal(noteName(58), 'B♭3');
+  assert.equal(freq(69), 440);
+  assert.ok(Math.abs(freq(60) - 261.63) < 0.01);
+  assert.ok(isBlack(61) && !isBlack(60));
+  const wav = new DataView(toneWav(69));
+  assert.equal(wav.getUint32(24, true), 22050);
+  assert.equal(wav.byteLength, 44 + 2 * 44100);
+});

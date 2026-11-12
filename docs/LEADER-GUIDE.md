@@ -40,6 +40,8 @@ Tips:
 - Already have the table from the "2027 Time Stamps" doc? Tap **📋 Paste a table**.
 - Score already has the times printed on it (the "with timestamps" PDFs)? Tap **📄 Use times from the score**. The app reads the printed times, bars and letters. You can still add or adjust marks yourself afterwards.
 
+**Starting notes:** on the song page, under **🎹 Starting notes**, tap **+ Set note** next to your part. A piano keyboard opens: tap keys to hear them (**◀ Lower** / **Higher ▶** move an octave; middle C has a dot), then tap **Save**. Tap **▶ A4** (or whatever you saved) to check it.
+
 ## 5. Run a rehearsal
 
 1. Tap **🎤 Rehearsal** → **Start a new rehearsal**. Tap the **part** you're rehearsing (it turns purple with a ✓; tap two for a combined sectional), check the name and date, tick the songs, then tap **Start rehearsal**. Only that part's tracks (plus the full mix) will show.
@@ -48,6 +50,7 @@ Tips:
    - **Track:** tap the track you want (the buttons use the track names, e.g. Full mix, Alto 1). It stays chosen until you tap another. Only your parts are shown. Tap **Show all parts** to see the rest.
    - **Start from:** tap **▶ From the top**, a letter (**A**, **B**, **C**…), or type a bar number and tap **▶ Bar**.
      Letters and bars need that track's timestamps. Without them, only "From the top" works.
+   - **Starting note:** tap the orange **▶ Middles: A4** button (your part and its saved note) to give the note. Tap **🎹 Keyboard** to show a piano keyboard and tap any note. You can also say "starting note" or "give me the note".
    - Use the big **⏹ Stop**, **↺ Again** and **⏪ Back 5s** buttons.
    - **Speed:** tap **90%**, **80%**, **70%**, **60%** or **50%** to slow the track down (the pitch stays the same). Tap **Normal** to go back. The speed stays until you change it, and shows in the player at the bottom (e.g. "· 80%"). You can also say "slower", "half speed", "speed 80" or "normal speed".
 3. **Voice (optional):** tap **🎤 Speak** and say e.g. "letter B", "bar 32", "alto 2 bar 32", "first altos letter C" or "middles from the top". Saying a part switches to that track.

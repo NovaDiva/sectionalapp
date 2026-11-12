@@ -4,6 +4,7 @@
 //   "bars 10-24 sopranos"  -> play bars 10 to 24, then stop
 //   "B to C"               -> play from letter B until letter C starts
 //   "viva alto from the top", "stop", "again", "back 10", "note: altos flat at C", "fix: tuning bar 40"
+//   "starting note", "give me the note", "lowers starting note" -> play the saved starting note(s)
 
 import { timeForBar, findLetter, lettersIn, sortMarks, formatTime } from './timestamps.js';
 
@@ -87,6 +88,8 @@ export function normalizeSpoken(input) {
   return out.join(' ').trim();
 }
 
+const STARTNOTE = /\b(start(ing)? (note|notes|pitch|pitches)|give (me |us )?(the |a |our )?(note|notes|pitch)|our (note|notes)|my (note|notes))\b|^(the )?(note|pitch)( please)?$/;
+
 export function canonicalVoice(word) {
   return ALIAS[word] || null;
 }
@@ -114,6 +117,9 @@ export function parseCommand(input, ctx) {
   const text = normalizeSpoken(input);
   if (!text) return { type: 'none' };
   const lower = text.toLowerCase();
+
+  // Starting note: "starting note", "give me the note", "pitch please", "lowers starting note".
+  if (STARTNOTE.test(lower) && !/^(note|notes|fix|todo|to do|next time|work on)\b\s*[:\-]?\s+(?!please$)/.test(lower)) return { type: 'startnote', text };
 
   // Notes and to-dos typed into the box.
   let m = text.match(/^(?:note|notes)\s*[:\-]?\s+(.+)$/i);

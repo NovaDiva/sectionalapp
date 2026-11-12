@@ -338,3 +338,26 @@ textarea.speaking::placeholder { color: var(--orange); font-weight: 700; opacity
 
 /* header fills the status-bar strip too, so the top of the screen is solid black */
 .topbar { position: relative; z-index: 5; }
+
+/* piano keyboard (giving a note) and starting-note buttons */
+.piano { display: flex; flex-direction: column; gap: 8px; user-select: none; -webkit-user-select: none; }
+.kb-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.kb-shift { min-height: 52px; min-width: 120px; font-size: 18px; }
+.kb-range { font-size: 18px; font-weight: 700; color: var(--brand-dark); }
+.kb-keys { position: relative; display: flex; height: 200px; border-radius: 0 0 10px 10px; overflow: hidden; touch-action: manipulation; }
+.key { font: inherit; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; padding: 0 0 10px; -webkit-tap-highlight-color: transparent; }
+.key.white { flex: 1; background: #fff; border: 1px solid #9aa5a7; border-top: none; color: #333; font-size: 17px; font-weight: 700; }
+.key.white + .key.white { border-left: none; }
+.key.black { position: absolute; top: 0; height: 60%; z-index: 1; background: #1d1b20; border: 1px solid #000; border-radius: 0 0 6px 6px; color: #ddd; font-size: 12px; padding-bottom: 8px; }
+.key.sounding { background: var(--gold) !important; color: #000; }
+.key.chosen { background: var(--orange) !important; color: #fff; }
+.key.middle-c .key-label::after { content: ''; display: block; width: 10px; height: 10px; border-radius: 50%; background: var(--brand); margin: 4px auto 0; }
+.kb-foot { text-align: center; }
+.kb-now { margin-top: 10px; font-size: 20px; font-weight: 700; text-align: center; color: var(--brand-dark); }
+.kb-wrap { background: #f3f6f6; border-radius: 12px; padding: 10px; }
+.start-btn.note-btn { background: #fff4e8; border-color: var(--orange); color: #8a3c06; }
+.start-btn.kb-toggle.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn.note-play { min-width: 110px; }
+.play-panel.compact .kb-keys { height: 150px; }
+.modal .piano { margin-top: 6px; }
+.modal:has(.piano) { width: min(900px, 100%); }
