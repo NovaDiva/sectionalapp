@@ -2,7 +2,7 @@
 
 Sectional: an iPad web app for choir sectional leaders, built for Carol.
 Live at https://novadiva.github.io/sectionalapp/ (GitHub Pages, served from branch
-`claude/choir-sectional-app-wg6esg`, root folder). The repository is public, so never commit scores, tracks or personal data.
+`claude/choir-sectional-app-wg6esg`, root folder; moved 12 Nov 2026 from the old hummingsong-novadiva address, whose organisation Carol has deleted). The repository is public, so never commit scores, tracks or personal data.
 
 ## Decisions Carol made (keep to these unless she changes them)
 - Must stay simple for leaders with basic iPad skills: big buttons, plain words, few steps.
