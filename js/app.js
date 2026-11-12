@@ -138,9 +138,11 @@ async function importScoreTimes(track, scores) {
   }
   toast('Reading the times on the score…');
   let found = [];
+  let part = null;
   try {
-    const { readScoreTimes } = await import('./scoretimes.js');
-    found = await readScoreTimes(await db.getBlob(score.blobId));
+    const { readScoreTimes, partTag } = await import('./scoretimes.js');
+    part = partOf(track);
+    found = await readScoreTimes(await db.getBlob(score.blobId), { tag: part ? partTag(part) : '' });
   } catch (e) {
     alert(`Sorry, the score could not be read. ${e.message || ''}`);
     return null;
@@ -154,7 +156,11 @@ async function importScoreTimes(track, scores) {
   const letters = lettersIn(found);
   const body = h('div', {},
     h('p', {}, `Found ${found.length} times on "${score.name}"${letters.length ? ` (letters ${letters.join(', ')})` : ''}, from ${formatTime(found[0].t)} to ${formatTime(found[found.length - 1].t)}.`),
-    h('p', { class: 'muted small' }, 'The printed times fit the recording they were made from (usually the full mix). On a part track they may be a little early or late. Check a few and use −1s / +1s.'));
+    found.usedTag
+      ? h('p', { class: 'muted small' }, `These are the ${part} times printed on the score (marked "${found.usedTag}").`)
+      : h('p', { class: 'muted small' }, found.tags?.length || part
+        ? `These are the full-mix times${part ? ` (the score has no separate ${part} times)` : ''}. On a part track they may be a little early or late. Check a few and use −1s / +1s.`
+        : 'The printed times fit the recording they were made from (usually the full mix). On a part track they may be a little early or late. Check a few and use −1s / +1s.'));
   const choice = await modal(`Use these times for ${track.name}?`, body, [
     { label: 'Cancel', value: () => null },
     existing.length ? { label: 'Add to my marks', value: () => 'add' } : null,

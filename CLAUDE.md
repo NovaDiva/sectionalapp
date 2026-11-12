@@ -17,7 +17,9 @@ Live at https://novadiva.github.io/sectionalapp/ (GitHub Pages, served from bran
   timestamps (part tracks don't share timing). Pasting a table from her "2027 Time Stamps" doc is
   also supported (the format comes from her choir-track-timestamps skill), and so is reading the times
   printed on her "with timestamps" score PDFs (js/scoretimes.js: margin labels + bar numbers + letters
-  via PDF.js text). Printed times belong to one recording (usually the full mix).
+  via PDF.js text). Printed times belong to one recording (usually the full mix). v29: labels can also carry a
+  part track's own time, "0:01 | S2 0:03" (full mix | Soprano 2; tag = first letter + number of the part, T/M/L
+  for Tops/Middles/Lowers): a track whose part has a tag gets its own times, others get the first (full-mix) time.
 - Rehearsal Play tab: big track buttons (track names, choice stays per song), Start-from buttons
   (top / letters / bar box), big Speak/Stop/Again/Back 5s, a type box, then the chat log.
   The 🎤 voice button can be switched off in Help (Bluetooth speakers drop when the mic is used).
@@ -55,7 +57,7 @@ Live at https://novadiva.github.io/sectionalapp/ (GitHub Pages, served from bran
   and shows a "Tap to update" banner, so leaders never need to reopen the link (that makes a new, empty copy).
 - iPad audio must start from a tap: keep `player.prepare()` before commands and `player.unlock()` on the mic tap.
 
-## Status (v28, 12 Nov 2026) - WAITING for Carol's feedback after her next real rehearsal
+## Status (v29, 12 Nov 2026) - WAITING for Carol's feedback after her next real rehearsal
 Live: songs/scores/tracks; timestamps (tap-along MARK, paste table, read times printed on the score);
 rehearsal (part choice, track buttons, start-from letters/bar, Speak/Stop/Again/Back 5s, speed 50-100%,
 + Add song mid-rehearsal); Notes tab with "Speak a note" (keyboard dictation); score viewer + mark-up
@@ -68,6 +70,8 @@ When Carol comes back, start by asking/checking (she has not answered these yet)
    0.5 s silence + 0.4 s pause)? Gap too long/short -> tune SETTLE in js/player.js.
 3. Bluetooth speaker stays connected after Speak? (if not: voice off in Help, or offer clicker/foot pedal)
 4. "Use times from the score" on her real "with timestamps" PDFs: how many times/letters found, correct?
+   (v28 found NONE on Don't Stop Me Now: its labels are "0:01 | S2 0:03"; v29 reads them. Re-check on her iPad,
+   for Full mix AND Soprano 2. If still none, ask her to upload that PDF to the session to test against.)
 5. Slowed tracks sound OK (pitch kept), esp. 50%?
 6. Speak a note (keyboard 🎙 bottom-left) working?
 7. v28 starting notes: does the note play through the Bluetooth speaker, at a good volume? Tone OK? Does
@@ -93,7 +97,7 @@ Mic/audio history and LESSONS:
   change as an opt-in setting she can switch back herself.
 - Keyboard-voice fallback is only sticky if the iPad refuses/can't listen; a slow start (6 s) falls back once.
 
-Version history: v28 piano keyboard + starting notes; v27 Android steps in Help; v26 light top band above the black header (Carol: keep);
+Version history: v29 score labels with part times ("0:01 | S2 0:03"); v28 piano keyboard + starting notes; v27 Android steps in Help; v26 light top band above the black header (Carol: keep);
 v25 header top padding; v24 black status strip (replaced by v26); v23 clearer Speak-a-note prompt;
 v22 Speak a note + Covered/Fix parked; v21 Hummingsong branding; v20 voice restored to v17; v17 silent warm-up;
 v13 keyboard-voice fallback; v12 speed; v11 add song mid-rehearsal; v10 score times; v9 rehearsal part choice;

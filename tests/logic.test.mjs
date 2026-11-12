@@ -232,3 +232,28 @@ test('note names and pitch', async () => {
   assert.equal(wav.getUint32(24, true), 22050);
   assert.equal(wav.byteLength, 44 + 2 * 44100);
 });
+
+test('score labels with a part track time ("0:01 | S2 0:03")', async () => {
+  const { marksFromTextItems, parseLabel, partTag } = await import('../js/scoretimes.js');
+  assert.deepEqual(parseLabel('0:01 | S2 0:03'), { '': ['0:01'], S2: ['0:03'] });
+  assert.deepEqual(parseLabel('0:40 / 1:41 | A1 0:42 / 1:43'), { '': ['0:40', '1:41'], A1: ['0:42', '1:43'] });
+  assert.equal(parseLabel('S2 0:03'), null);
+  assert.equal(partTag('Soprano 2'), 'S2');
+  assert.equal(partTag('Tops'), 'T');
+  const page = [
+    { str: '0:01 | S2 0:03', x: 8, y: 150, h: 8 },
+    { str: 'A', x: 140, y: 120, h: 16 },
+    { str: '5', x: 62, y: 270, h: 7 }, { str: '0:12', x: 8, y: 272, h: 8 }, { str: '|', x: 30, y: 272, h: 8 },
+    { str: 'S2', x: 36, y: 272, h: 8 }, { str: '0:15', x: 48, y: 272, h: 8 },
+    { str: 'Doo', x: 140, y: 272, h: 10 },
+  ];
+  const full = marksFromTextItems([page]);
+  assert.deepEqual(full.map((m) => [m.t, m.bar]), [[1, 1], [12, 5]]);
+  assert.deepEqual(full.tags, ['S2']);
+  assert.equal(full.usedTag, '');
+  const s2 = marksFromTextItems([page], { tag: 'S2' });
+  assert.deepEqual(s2.map((m) => [m.t, m.bar]), [[3, 1], [15, 5]]);
+  assert.equal(s2.usedTag, 'S2');
+  // A part not printed on the score gets the full-mix times
+  assert.equal(marksFromTextItems([page], { tag: 'A1' }).usedTag, '');
+});
