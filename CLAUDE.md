@@ -31,7 +31,7 @@ Live at https://novadiva.github.io/sectionalapp/ (GitHub Pages, served from bran
   in rehearsal the score's player is ONE slim strip (track list, ▶ Top + letters + bar box scrolling sideways,
   Speak/Stop/Again/Back 5s, ⋯ More = speed, starting notes/keyboard, type box); the bottom mini player is hidden
   while it shows; tapping the music (not in Mark up) hides/shows the strip (tip toast the first 3 times).
-  Score gets ~87% of the screen. Next idea she may want: tap a printed time label on the score to play from it.
+  Score gets ~87% of the screen. Carol tested v30 on her iPad (17 Nov): "good". Next idea she may want: tap a printed time label on the score to play from it.
 - Parts: the choir has Soprano 1, Soprano 2, Alto 1, Alto 2 (4-part) and Tops, Middles, Lowers (3-part).
   Each leader picks "my parts" (first-run card / Help), and only those tracks show, plus tracks for everyone
   (item.part = null: full mix, piano). Track part is guessed from the name and can be changed on the song page.
@@ -74,8 +74,7 @@ When Carol comes back, start by asking/checking (she has not answered these yet)
    0.5 s silence + 0.4 s pause)? Gap too long/short -> tune SETTLE in js/player.js.
 3. Bluetooth speaker stays connected after Speak? (if not: voice off in Help, or offer clicker/foot pedal)
 4. "Use times from the score" on her real "with timestamps" PDFs: how many times/letters found, correct?
-   (v28 found NONE on Don't Stop Me Now: its labels are "0:01 | S2 0:03"; v29 reads them. Re-check on her iPad,
-   for Full mix AND Soprano 2. If still none, ask her to upload that PDF to the session to test against.)
+   (v28 found NONE on Don't Stop Me Now: its labels are "0:01 | S2 0:03"; v29 reads them: Carol confirmed "working well". If still none, ask her to upload that PDF to the session to test against.)
 5. Slowed tracks sound OK (pitch kept), esp. 50%?
 6. Speak a note (keyboard 🎙 bottom-left) working?
 7. v28 starting notes: does the note play through the Bluetooth speaker, at a good volume? Tone OK? Does
