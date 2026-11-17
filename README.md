@@ -14,6 +14,10 @@ Everything stays **on each leader's own iPad**. There's no login, no server and 
 
 See [docs/LEADER-GUIDE.md](docs/LEADER-GUIDE.md) for the one-page guide for leaders.
 
+**Phone version:** `phone/` is **Sectional Practice**, a simpler app for iPhone/Android phones (leaders and choir members):
+play tracks, start from a letter or bar (times read from a "with timestamps" score), slow down, starting notes, my parts, backup.
+It has its own address (`…/sectionalapp/phone/`), home-screen icon, storage and version. Guide: [docs/PHONE-GUIDE.md](docs/PHONE-GUIDE.md).
+
 ## Putting it online (one-time)
 
 It's a plain website (HTML, CSS and JavaScript, with no build step). It needs to be served over HTTPS so iPads can install it. The easiest free option is GitHub Pages:

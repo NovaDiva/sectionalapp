@@ -1,0 +1,105 @@
+/* Sectional Practice (phone). Loaded after the iPad app's ../css/app.css: same brand and
+   buttons, adjusted for a phone held upright or sideways. */
+
+body.phone {
+  /* iPhone: the status bar sits above the page (status-bar style "black"), so no extra band is needed. */
+  --top-band: env(safe-area-inset-top, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  font-size: 17px;
+  height: 100%;
+  height: 100dvh;
+}
+.phone .topbar {
+  padding: calc(var(--top-band) + 8px) calc(12px + var(--safe-r)) 8px calc(12px + var(--safe-l));
+  min-height: 0; gap: 10px;
+}
+.phone .brand-logo { height: 34px; }
+.phone .topbar h1 { font-size: 19px; padding-left: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.phone .topbar .back { min-height: 44px; padding: 0 12px; flex: none; }
+/* With Back showing, the logo makes room for the song title. */
+.phone .topbar:has(.back:not([hidden])) .brand-logo { display: none; }
+.phone .topbar:has(.back:not([hidden])) h1 { border-left: 0; padding-left: 0; }
+
+.phone main { padding: 12px calc(12px + var(--safe-r)) 24px calc(12px + var(--safe-l)); }
+.phone main > * + * { margin-top: 12px; }
+.phone .card { padding: 14px; }
+.phone .tabbar a { min-height: 56px; }
+.phone .tabbar { padding-left: var(--safe-l); padding-right: var(--safe-r); }
+.phone .toast { bottom: calc(130px + var(--safe-b)); }
+.phone .mini-link { text-decoration: none; color: inherit; }
+.phone .mini { padding-left: var(--safe-l); padding-right: var(--safe-r); }
+
+/* song list */
+.song-item { min-height: 72px; }
+.song-icon { width: 46px; height: 46px; border-radius: 50%; background: var(--brand); color: #fff; display: grid; place-items: center; font-size: 20px; flex: none; }
+
+/* parts picker: two per row */
+.parts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.parts-grid .track-btn { min-width: 0; padding: 0 8px; font-size: 18px; }
+
+/* practise screen */
+.play-cols { display: flex; flex-direction: column; gap: 12px; }
+.phone .play-panel { padding: 12px; gap: 8px; }
+.phone .panel-label { font-size: 14px; }
+.phone-tracks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.phone-tracks .track-btn { min-width: 0; min-height: 58px; padding: 0 8px; font-size: 18px; overflow-wrap: anywhere; line-height: 1.15; }
+.phone .start-row { gap: 8px; }
+.phone .start-btn { min-height: 56px; padding: 0 14px; }
+.phone .start-btn.letter { min-width: 56px; }
+.phone .top-btn { flex: 1 1 100%; background: var(--brand-soft); border-color: var(--brand); color: var(--brand-dark); }
+.phone .bar-group { flex: 1 1 auto; }
+.phone .bar-box { width: 84px !important; min-height: 56px; }
+.phone .hint { font-size: 15px; }
+.phone .hint .link-btn { padding: 0; min-height: 36px; text-align: left; }
+
+.now { display: flex; flex-direction: column; gap: 6px; }
+.now-name { font-weight: 700; color: var(--brand-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; }
+.now-time { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 15px; flex: none; }
+.now .row.space { flex-wrap: nowrap; }
+.now .mini-progress-wrap { border-radius: 2px; overflow: hidden; height: 6px; }
+
+.ctl-row.phone-ctl { display: grid; grid-template-columns: 1fr 1.3fr 1fr 1fr; gap: 8px; }
+.phone-ctl .big-ctl { min-height: 76px; font-size: 15px; padding: 0 2px; }
+.phone-ctl .big-ctl .ctl-icon { font-size: 28px; }
+.phone-ctl .play-ctl { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+.phone-speed { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.phone-speed .speed-btn { min-width: 0; min-height: 50px; padding: 0 4px; font-size: 17px; }
+
+.phone .note-row .note-btn { flex: 1 1 auto; }
+.phone .kb-toggle { flex: 1 1 auto; }
+.phone .kb-wrap { padding: 8px; }
+.phone .kb-keys { height: 170px; }
+.phone .kb-shift { min-width: 0; padding: 0 12px; font-size: 16px; }
+.phone .kb-range { font-size: 16px; }
+.phone .key.white { font-size: 15px; padding-bottom: 8px; }
+.phone .key.black { font-size: 10px; }
+.setup-link { min-height: 56px; }
+
+/* set-up screen */
+.setup-row { display: flex; flex-direction: column; gap: 6px; padding: 10px 0; border-top: 1px solid var(--line); }
+.setup-row:first-of-type { border-top: 0; }
+.setup-row .part-select { width: 100% !important; }
+.phone .modal { padding: 16px; }
+.phone .modal-wrap { padding: 10px; }
+body.busy main { opacity: .6; pointer-events: none; }
+
+/* wider phones and sideways: tracks/start-from on the left, player on the right */
+@media (min-width: 640px) {
+  .phone-speed { grid-template-columns: repeat(6, 1fr); }
+  .play-cols { display: grid; grid-template-columns: 1fr 1fr; align-items: start; }
+  .phone main > * { max-width: 1100px; }
+}
+/* sideways on a phone: little height, so a slimmer header and tab bar */
+@media (orientation: landscape) and (max-height: 500px) {
+  .phone .topbar { padding-top: calc(var(--top-band) + 4px); padding-bottom: 4px; }
+  .phone .brand-logo { height: 28px; }
+  .phone .tabbar a { min-height: 44px; flex-direction: row; gap: 6px; font-size: 15px; }
+  .phone .tabbar a span { font-size: 20px; }
+  .phone-ctl .big-ctl { min-height: 60px; }
+  .phone-tracks .track-btn, .phone .start-btn { min-height: 50px; }
+  .phone .bar-box { min-height: 50px; }
+  .phone .kb-keys { height: 130px; }
+  .phone .update { padding: 6px 12px; }
+}

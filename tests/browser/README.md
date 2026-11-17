@@ -1,4 +1,4 @@
-# Browser tests (Playwright, Chromium at iPad size)
+# Browser tests (Playwright, Chromium at iPad size; phone*.cjs at iPhone size)
 
 ```bash
 python3 -m http.server 8765 &            # from the repo root
@@ -16,6 +16,8 @@ node tests/browser/session.cjs                 # sound mode is not re-applied on
 node tests/browser/settle.cjs $FX              # voice command: silent warm-up, pause, track; buttons/Stop during warm-up; repeats
 node tests/browser/pitch.cjs $OUT              # piano keyboard, saved starting notes, "starting note" command
 node tests/browser/update.cjs $OUT/update.png  # "Tap to update" banner
+node tests/browser/phone.cjs $FX $OUT          # PHONE app (phone/) at iPhone size: add song, score times, play, speed, notes, sideways, backup, iPad restore
+node tests/browser/phone-offline.cjs           # PHONE app works offline (its own service worker, /phone/ scope)
 ```
 
 Each prints what it saw and `errors: none` / `ERRORS: none` when clean. Screenshots go to $OUT.

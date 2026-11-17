@@ -1,5 +1,7 @@
 # Starting the iPhone version: instructions for Carol
 
+> **Done (17 Nov 2026):** the phone version was built as **Sectional Practice** in `phone/`. Carol's answers and the details are in CLAUDE.md.
+
 ## How to start the new session
 
 1. Go to **claude.ai/code** and start a **new session**.

@@ -75,8 +75,7 @@ Still to check when Carol comes back:
 1. (Low priority, Speak works anyway) Help -> Voice button card: "can listen directly" or "uses the keyboard's 🎤"?
    Also fine (17 Nov): slowed tracks incl. 50%; Speak a note via the keyboard mic.
 2. Feedback from the test leader she is about to share the app with.
-Planned next (17 Nov): an iPhone version with fewer features, in a NEW session; Carol's brief and paste-in
-prompt are in docs/IPHONE-VERSION-BRIEF.md. Don't change the iPad app for it.
+Phone version: see "Sectional Practice (phone/)" below. The iPad app was not changed for it.
 Known/accepted: the orange mic dot stays on during playback after voice use (iPad behaviour).
 
 How to work: check `git status`/`git log` first; read the lessons below before touching mic/audio code.
@@ -84,6 +83,30 @@ After every change: `npm test`, the browser flows in tests/browser/README.md (fi
 bump VERSION in sw.js, update this file, commit + push to claude/choir-sectional-app-wg6esg (GitHub Pages
 publishes in ~1 min; check with the Actions "pages build and deployment" run). Tell Carol the new version
 number she should see at the bottom of Help.
+
+## Sectional Practice (phone/), started 17 Nov 2026 - practice-v1, WAITING for Carol to try it on her iPhone
+Address https://novadiva.github.io/sectionalapp/phone/ (folder in this repo, own home-screen icon "Practice").
+Carol's answers (17 Nov): for leaders AND choir members; each person adds their own files (MP3s from Files;
+no "leader sends a file" feature); no score viewing; timestamps only by reading the times printed on a
+"with timestamps" score PDF (added on the set-up screen, read automatically for tracks without times; the PDF is
+kept but not shown); name "Sectional Practice", same Hummingsong look; upright AND sideways.
+Kept: track buttons, start from top/letter/bar, Back 5s / Play-Pause / Again / Stop, speed 50-100%, starting notes
++ one-octave keyboard (C-C, ◀ ▶), my parts + parts list, backup/restore (also restores an iPad "everything" backup;
+rehearsals left out). Left out: score view + mark-up, MARK/paste timestamps, Speak/voice, notes/summary/past.
+Screens: Songs (home, first-run "Which part do you sing?") -> song = practise screen -> ⚙ Set up (tracks, score
+with times, starting notes) ; Help. Switching track while playing carries on at the same place.
+Code: phone/js/app.js (screens), phone/js/db.js (own IndexedDB 'sectional-practice'), phone/js/player.js = EXACT
+copy of js/player.js (npm test fails if they differ: copy it over and bump both VERSIONs), phone/js/timestamps.js and
+pitch.js re-export ../../js/ ; app.js also imports ../../js/parts.js, commands.js, scoretimes.js. CSS = ../css/app.css
++ phone/css/phone.css. SO: changing those shared iPad files changes the phone app too - run both apps' tests.
+phone/sw.js: VERSION 'practice-vN' (bump on any phone change or shared-file change), scope /phone/, cache names
+'practice-*'. Note: the iPad sw.js deletes every cache but its own on update; on a device with both apps in one
+browser the phone cache refills on its next online open (home-screen icons have separate storage anyway).
+localStorage keys myParts/choirParts/speed are shared by both apps in one browser (not between home-screen icons).
+Tests: npm test (tests/phone.test.mjs), tests/browser/phone.cjs + phone-offline.cjs at 390x844 / 844x390 / 320.
+User guide: docs/PHONE-GUIDE.md. Publishing = pushing to claude/choir-sectional-app-wg6esg (only with Carol's OK).
+Still to check on Carol's iPhone: install from Safari, adding MP3s from Files, sound with the ring/silent switch
+on silent, Bluetooth, letters from her real "with timestamps" PDF, slowed playback, starting note, sideways, backup.
 
 Mic/audio history and LESSONS:
 - v14: setSoundMode only assigns navigator.audioSession.type when it differs (re-applying it reset her
