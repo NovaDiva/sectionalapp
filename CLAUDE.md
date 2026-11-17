@@ -75,6 +75,8 @@ Still to check when Carol comes back:
 1. (Low priority, Speak works anyway) Help -> Voice button card: "can listen directly" or "uses the keyboard's 🎤"?
    Also fine (17 Nov): slowed tracks incl. 50%; Speak a note via the keyboard mic.
 2. Feedback from the test leader she is about to share the app with.
+Planned next (17 Nov): an iPhone version with fewer features, in a NEW session; Carol's brief and paste-in
+prompt are in docs/IPHONE-VERSION-BRIEF.md. Don't change the iPad app for it.
 Known/accepted: the orange mic dot stays on during playback after voice use (iPad behaviour).
 
 How to work: check `git status`/`git log` first; read the lessons below before touching mic/audio code.
