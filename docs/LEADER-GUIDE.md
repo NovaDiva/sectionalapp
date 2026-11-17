@@ -59,7 +59,7 @@ Tips:
    - After a spoken command there's a short silence (about 1 second) before the music starts. That gives a Bluetooth speaker time to settle back to your volume.
    You can also type the same words in the box and tap **Go**.
    Using a Bluetooth speaker? The iPad may move the sound off the speaker when the microphone is used. If so, turn the voice button off in **❔ Help** and use the buttons.
-4. Tap **📖 Score** to show the score full screen. **🎵 Player** shows or hides the track and letter buttons.
+4. Tap **📖 Score** to show the score full screen, with one slim row of player buttons at the top: the track (tap it to choose another), **▶ Top** and the letters, **🎤 Speak**, **⏹ Stop**, **↺ Again**, **⏪ Back 5s**. **⋯ More** shows the speed, starting notes and keyboard, and the type box. **Tap the music** to hide the buttons and see more of the score; tap again to bring them back (or tap **🎵 Player**).
    - **✏️ Mark up** lets you draw on the score: **✏️ Pen**, **🖍 Highlight**, **🔤 Text** (tap where the note goes), **🧽 Eraser**, **↶ Undo**. Tap **✋ Scroll** to move the page again. Your marks are saved on this iPad.
 5. **📝 Notes**: type a note, or tap **🎤 Speak a note**, then tap the **🎙 microphone key on the keyboard** (bottom left, next to .?123) and speak. Check the words, then tap **+ Add note**. (Any playing track pauses so the iPad hears you.)
 

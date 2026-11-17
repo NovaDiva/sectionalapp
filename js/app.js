@@ -320,6 +320,16 @@ async function openScore(item, { commandBox } = {}) {
     playBtn.classList.toggle('primary', !commandBox.hidden);
   } }, '🎵 Player') : null;
 
+  // Tap the music (when not marking up) to hide or show the player strip.
+  if (commandBox) {
+    body.addEventListener('click', (e) => {
+      if (!toolbar.hidden || e.target.closest('button, input, textarea')) return;
+      commandBox.hidden = !commandBox.hidden;
+      playBtn.classList.toggle('primary', !commandBox.hidden);
+    });
+    const seen = Number(localStorage.getItem('scoreTapTip') || 0);
+    if (seen < 3) { localStorage.setItem('scoreTapTip', String(seen + 1)); setTimeout(() => toast('Tip: tap the score to hide or show the player'), 800); }
+  }
   const close = async () => { await ann.flush(); ctl?.destroy(); ov.remove(); document.body.classList.remove('viewing'); };
   const ov = h('div', { class: 'overlay' },
     h('div', { class: 'overlay-bar' },
@@ -911,6 +921,26 @@ async function screenRehearsal(id, tab = 'play') {
     return el;
   }
 
+  // The track as one button (a list to pick from), for the slim score strip.
+  function trackSelect() {
+    const sel = h('select', { class: 'strip-track', 'aria-label': 'Track', onchange: () => {
+      const song = curSong();
+      const t = song?.tracks.find((x) => x.id === sel.value);
+      if (!t) return;
+      r.trackFor[song.id] = t.id; save(); refreshControls(); toast(`${t.name} chosen`);
+    } });
+    const render = () => {
+      const song = curSong();
+      const cur = chosenTrack(song);
+      fill(sel, song?.tracks.length
+        ? song.tracks.map((t) => h('option', { value: t.id }, t.name))
+        : h('option', { value: '' }, 'No tracks'));
+      sel.value = cur?.id || '';
+    };
+    refreshers.add(render); render();
+    return sel;
+  }
+
   function startButtons(cls = '') {
     const el = h('div', { class: `start-row ${cls}` });
     const render = () => {
@@ -929,7 +959,7 @@ async function screenRehearsal(id, tab = 'play') {
       };
       barIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') playBar(); });
       fill(el,
-        h('button', { class: 'start-btn', onclick: () => playChosen(0, null, 'from the top') }, '▶ From the top'),
+        h('button', { class: 'start-btn', onclick: () => playChosen(0, null, 'from the top') }, cls.includes('compact') ? '▶ Top' : '▶ From the top'),
         letters.map((L) => h('button', { class: 'start-btn letter', onclick: () => {
           const m = findLetter(marks, L); playChosen(m.t, null, `from letter ${L}`);
         } }, L)),
@@ -990,8 +1020,8 @@ async function screenRehearsal(id, tab = 'play') {
     const startKeyboardVoice = (why, { always = false } = {}) => {
       if (always) useKeyboardVoice = true; // only when the iPad refuses or can't listen at all
       input.value = '';
+      showVoiceTip(true); // first, so the box is on screen when it gets the focus
       input.focus();
-      showVoiceTip(true);
       setDictating(true);
       if (why) toast(why);
     };
@@ -1043,7 +1073,13 @@ async function screenRehearsal(id, tab = 'play') {
     const tip = h('div', { class: 'voice-tip', hidden: true },
       h('div', { class: 'voice-tip-big' }, 'Now tap the 🎤 on the keyboard and speak'),
       h('div', {}, 'The microphone key is next to the space bar. Say e.g. "letter B" or "alto bar 32". When you stop talking, the app plays it.'));
-    const showVoiceTip = (on) => { tip.hidden = !on; tip.parentElement?.classList.toggle('dictating', on); };
+    let morePanel = null; // score strip: speed, keyboard and the type box live behind "More"
+    const showVoiceTip = (on) => {
+      if (on && morePanel) setMore(true);
+      tip.hidden = !on; (tip.closest('.play-panel') || tip.parentElement)?.classList.toggle('dictating', on);
+    };
+    let moreBtn = null;
+    const setMore = (on) => { morePanel.hidden = !on; moreBtn.classList.toggle('on', on); moreBtn.setAttribute('aria-expanded', String(on)); };
     const go = ({ voice = false } = {}) => {
       clearTimeout(dictTimer);
       const fromVoice = voice || dictating;
@@ -1063,8 +1099,25 @@ async function screenRehearsal(id, tab = 'play') {
     input.addEventListener('blur', () => { setTimeout(() => { if (!input.value.trim()) { dictating = false; showVoiceTip(false); } }, 300); });
     const form = h('form', { class: 'row cmd-row', onsubmit: (e) => { e.preventDefault(); go(); } },
       input, h('button', { class: 'btn primary go', type: 'submit' }, 'Go'));
-    return h('div', { class: `play-panel ${compact ? 'compact' : ''}` },
-      compact ? null : h('div', { class: 'row space' },
+    if (compact) {
+      // Score viewer: one slim strip, so the score gets most of the screen.
+      moreBtn = h('button', { class: 'big-ctl strip-more-btn', type: 'button', 'aria-expanded': 'false', onclick: () => setMore(morePanel.hidden) },
+        h('span', { class: 'ctl-icon' }, '⋯'), h('span', {}, 'More'));
+      morePanel = h('div', { class: 'strip-more', hidden: true },
+        h('div', { class: 'row wrap' }, speedButtons(true)),
+        startNoteRow(true),
+        tip,
+        form);
+      return h('div', { class: 'play-panel compact strip' },
+        h('div', { class: 'strip-row' },
+          trackSelect(),
+          h('div', { class: 'strip-starts' }, startButtons('compact')),
+          controlButtons(input, go, true, { showVoiceTip, setDictating: (v) => { dictating = v; } }),
+          moreBtn),
+        morePanel);
+    }
+    return h('div', { class: 'play-panel' },
+      h('div', { class: 'row space' },
         h('div', { class: 'panel-label' }, 'Track'),
         (curSong()?.allTracks.length || 0) > (visibleTracks(curSong()?.allTracks || [], rParts).length) || r.showAllParts
           ? h('button', { class: 'link-btn', type: 'button', onclick: async () => {

@@ -183,6 +183,7 @@ label.check { cursor: pointer; }
   position: fixed; inset: 0; z-index: 20; background: #555; display: flex; flex-direction: column;
 }
 body.viewing .tabbar { display: none; }
+body.viewing:has(.overlay .play-panel) .mini { display: none; } /* the score strip has the same buttons */
 body.viewing .mini { position: fixed; left: 0; right: 0; bottom: 0; padding-bottom: var(--safe-b); }
 body.viewing .overlay { bottom: 0; }
 body.viewing:has(.mini:not([hidden])) .pdf-body { padding-bottom: 90px; }
@@ -361,3 +362,24 @@ textarea.speaking::placeholder { color: var(--orange); font-weight: 700; opacity
 .play-panel.compact .kb-keys { height: 150px; }
 .modal .piano { margin-top: 6px; }
 .modal:has(.piano) { width: min(900px, 100%); }
+
+/* slim player strip in the score viewer (one row; speed, keyboard, type box behind More) */
+.play-panel.strip { padding: 6px 10px; gap: 6px; }
+.strip-row { display: flex; align-items: center; gap: 8px; }
+.strip-track {
+  min-height: 52px; max-width: 170px; padding: 0 10px; border-radius: 12px; border: 2px solid var(--brand);
+  background: var(--brand); color: #fff; font: inherit; font-size: 18px; font-weight: 700; flex: none;
+}
+.strip-starts { flex: 1; min-width: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.strip-starts .start-row { flex-wrap: nowrap; }
+.strip-starts .start-btn { min-width: 52px; padding: 0 12px; }
+.strip-starts .bar-box { width: 70px !important; min-height: 52px; }
+.strip .ctl-row.compact { display: flex; gap: 6px; flex: none; }
+.strip .ctl-row.compact .big-ctl { min-height: 52px; padding: 0 12px; gap: 6px; font-size: 17px; }
+.strip .ctl-row.compact .big-ctl .ctl-icon { font-size: 22px; }
+.strip .big-ctl.mic.compact { min-width: 0; }
+.strip-more-btn { min-height: 52px; padding: 0 12px; flex-direction: row !important; gap: 6px !important; font-size: 17px; flex: none; }
+.strip-more-btn.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+.strip-more { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
+.strip-more[hidden] { display: none; }
+.play-panel.compact .strip-more .cmd-row { display: flex; } /* the type box lives behind More */

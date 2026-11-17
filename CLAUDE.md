@@ -27,7 +27,11 @@ Live at https://novadiva.github.io/sectionalapp/ (GitHub Pages, served from bran
   focus the type box + green tip to use the keyboard's dictation key; the command auto-runs 1.6 s after
   the text stops changing. listen() always settles (timeouts) so the button can't get stuck.
 - Score viewer: ✏️ Mark up (pen, highlighter, typed notes, eraser, undo), saved in item.annotations
-  as fractions of the page size; 🎵 Player toggles the compact track/letter panel.
+  as fractions of the page size; 🎵 Player toggles the player strip. v30 (Carol: "score almost full screen"):
+  in rehearsal the score's player is ONE slim strip (track list, ▶ Top + letters + bar box scrolling sideways,
+  Speak/Stop/Again/Back 5s, ⋯ More = speed, starting notes/keyboard, type box); the bottom mini player is hidden
+  while it shows; tapping the music (not in Mark up) hides/shows the strip (tip toast the first 3 times).
+  Score gets ~87% of the screen. Next idea she may want: tap a printed time label on the score to play from it.
 - Parts: the choir has Soprano 1, Soprano 2, Alto 1, Alto 2 (4-part) and Tops, Middles, Lowers (3-part).
   Each leader picks "my parts" (first-run card / Help), and only those tracks show, plus tracks for everyone
   (item.part = null: full mix, piano). Track part is guessed from the name and can be changed on the song page.
@@ -57,7 +61,7 @@ Live at https://novadiva.github.io/sectionalapp/ (GitHub Pages, served from bran
   and shows a "Tap to update" banner, so leaders never need to reopen the link (that makes a new, empty copy).
 - iPad audio must start from a tap: keep `player.prepare()` before commands and `player.unlock()` on the mic tap.
 
-## Status (v29, 12 Nov 2026) - WAITING for Carol's feedback after her next real rehearsal
+## Status (v30, 17 Nov 2026) - WAITING for Carol's feedback after her next real rehearsal
 Live: songs/scores/tracks; timestamps (tap-along MARK, paste table, read times printed on the score);
 rehearsal (part choice, track buttons, start-from letters/bar, Speak/Stop/Again/Back 5s, speed 50-100%,
 + Add song mid-rehearsal); Notes tab with "Speak a note" (keyboard dictation); score viewer + mark-up
@@ -97,7 +101,7 @@ Mic/audio history and LESSONS:
   change as an opt-in setting she can switch back herself.
 - Keyboard-voice fallback is only sticky if the iPad refuses/can't listen; a slow start (6 s) falls back once.
 
-Version history: v29 score labels with part times ("0:01 | S2 0:03"); v28 piano keyboard + starting notes; v27 Android steps in Help; v26 light top band above the black header (Carol: keep);
+Version history: v30 slim score player strip, tap score to hide it; v29 score labels with part times ("0:01 | S2 0:03"); v28 piano keyboard + starting notes; v27 Android steps in Help; v26 light top band above the black header (Carol: keep);
 v25 header top padding; v24 black status strip (replaced by v26); v23 clearer Speak-a-note prompt;
 v22 Speak a note + Covered/Fix parked; v21 Hummingsong branding; v20 voice restored to v17; v17 silent warm-up;
 v13 keyboard-voice fallback; v12 speed; v11 add song mid-rehearsal; v10 score times; v9 rehearsal part choice;
