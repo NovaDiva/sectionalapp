@@ -68,17 +68,14 @@ rehearsal (part choice, track buttons, start-from letters/bar, Speak/Stop/Again/
 (Pencil confirmed working); parts + "my parts"; summary sharing; Hummingsong branding + confirmed header;
 update banner; backup/restore; iPad + Android install steps in Help; v28 piano keyboard + saved starting notes. Covered / Fix next time are PARKED.
 
-When Carol comes back, start by asking/checking (she has not answered these yet):
+Carol's answers (17 Nov 2026): Speak works for several commands and the speaker volume stays right (v17 warm-up
+is fine, leave SETTLE as is); Bluetooth speaker stays connected; starting note (v28) sounds good through the
+speaker; score times (v29) and the score strip (v30) work on her iPad.
+Still to check when Carol comes back:
 1. Help -> Voice button: does it say "can listen directly" or "uses the keyboard's 🎤"?
-2. Speak: works for several commands in a row? Speaker volume right after a voice command (v17 warm-up:
-   0.5 s silence + 0.4 s pause)? Gap too long/short -> tune SETTLE in js/player.js.
-3. Bluetooth speaker stays connected after Speak? (if not: voice off in Help, or offer clicker/foot pedal)
-4. "Use times from the score" on her real "with timestamps" PDFs: how many times/letters found, correct?
-   (v28 found NONE on Don't Stop Me Now: its labels are "0:01 | S2 0:03"; v29 reads them: Carol confirmed "working well". If still none, ask her to upload that PDF to the session to test against.)
-5. Slowed tracks sound OK (pitch kept), esp. 50%?
-6. Speak a note (keyboard 🎙 bottom-left) working?
-7. v28 starting notes: does the note play through the Bluetooth speaker, at a good volume? Tone OK? Does
-   "starting note" by voice work (after the short warm-up)? Keys big enough?
+2. Slowed tracks sound OK (pitch kept), esp. 50%? (not tried yet)
+3. Speak a note (keyboard 🎙 bottom-left) working?
+4. Feedback from the test leader she is about to share the app with.
 Known/accepted: the orange mic dot stays on during playback after voice use (iPad behaviour).
 
 How to work: check `git status`/`git log` first; read the lessons below before touching mic/audio code.
