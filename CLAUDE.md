@@ -72,10 +72,9 @@ Carol's answers (17 Nov 2026): Speak works for several commands and the speaker 
 is fine, leave SETTLE as is); Bluetooth speaker stays connected; starting note (v28) sounds good through the
 speaker; score times (v29) and the score strip (v30) work on her iPad.
 Still to check when Carol comes back:
-1. Help -> Voice button: does it say "can listen directly" or "uses the keyboard's 🎤"?
-2. Slowed tracks sound OK (pitch kept), esp. 50%? (not tried yet)
-3. Speak a note (keyboard 🎙 bottom-left) working?
-4. Feedback from the test leader she is about to share the app with.
+1. (Low priority, Speak works anyway) Help -> Voice button card: "can listen directly" or "uses the keyboard's 🎤"?
+   Also fine (17 Nov): slowed tracks incl. 50%; Speak a note via the keyboard mic.
+2. Feedback from the test leader she is about to share the app with.
 Known/accepted: the orange mic dot stays on during playback after voice use (iPad behaviour).
 
 How to work: check `git status`/`git log` first; read the lessons below before touching mic/audio code.
